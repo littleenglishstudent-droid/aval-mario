@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>شکارچی اعداد اول</title>
+<!-- Eitaa WebApp SDK (must be loaded from the official URL, not bundled) -->
+<script src="https://developer.eitaa.com/eitaa-web-app.js"></script>
+<script>
+  (function(){
+    try{
+      if(window.Eitaa && window.Eitaa.WebApp){
+        var wa = window.Eitaa.WebApp;
+        wa.ready();
+        wa.expand();
+        if(typeof wa.disableVerticalSwipes === 'function') wa.disableVerticalSwipes();
+      }
+    }catch(e){ console.warn('Eitaa SDK init failed', e); }
+  })();
+</script>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/shabnam-font/5.0.1/font-face.css" rel="stylesheet" onerror="this.remove()">
+<style>
+  :root{
+    --sky1:#4EC5F1; --sky2:#8FE3C7;
+    --gold:#FFC93C; --coral:#FF6B6B; --purple:#7C4DFF; --purple-dark:#5b32c9;
+    --dark:#1B1B2F; --cream:#FFF8EE;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;overflow:hidden;background:#3f8a78;height:100%;
+    font-family:'Shabnam','Vazirmatn', Tahoma, 'Segoe UI', Arial, sans-serif;
+    color:var(--dark); -webkit-tap-highlight-color:transparent;}
+  /* ---- Portrait lock: #viewport-fill uses position:fixed+inset:0, which browsers resolve
+         correctly using native fixed-positioning layout (unlike vh/dvh units, which some
+         in-app WebViews get wrong). JS (sizeApp) measures that box's real pixel size and
+         applies it to #app directly -- fully bypassing the vh/dvh unreliability. ---- */
+  #viewport-fill{position:fixed;inset:0;height:100vh;height:100svh;height:100dvh;width:100vw;overflow:hidden;
+    background:linear-gradient(160deg,#2a6f86,#3f8a78);
+    display:flex;align-items:center;justify-content:center;}
+  #app{
+    position:relative;
+    height:100%;
+    width:min(100%, 56.25vh);
+    overflow:hidden; box-shadow:0 0 40px rgba(0,0,0,.55);
+    background:linear-gradient(160deg,var(--sky1),var(--sky2));
+    padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);
+  }
+  .screen{position:absolute;inset:0;display:none;flex-direction:column;}
+  .screen.active{display:flex;}
+
+  .btn{border:none;border-radius:16px;padding:13px 22px;font-family:inherit;
+    font-weight:700;font-size:.95rem;cursor:pointer;color:#fff;
+    box-shadow:0 6px 0 rgba(0,0,0,.25);transition:transform .08s, box-shadow .08s;}
+  .btn:active{transform:translateY(6px);box-shadow:0 0 0 rgba(0,0,0,.25);}
+  .btn-purple{background:var(--purple);box-shadow:0 6px 0 var(--purple-dark);}
+  .btn-gold{background:var(--gold);color:#5a3d00;box-shadow:0 6px 0 #b8860b;}
+  .btn-outline{background:#fff;color:var(--purple);box-shadow:0 6px 0 #c9c2e8;}
+  .btn-sm{padding:9px 16px;font-size:.85rem;border-radius:13px;}
+  .btn:disabled{opacity:.4;cursor:default;transform:none;}
+
+  .topbar{display:flex;align-items:center;gap:8px;padding:10px 12px;position:relative;z-index:8;flex:0 0 auto;}
+  .topbar .spacer{flex:1;}
+  .icon-btn{width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,.28);
+    color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .icon-btn:active{transform:scale(.9);}
+
+  .float-num{position:absolute;top:-40px;font-weight:800;color:rgba(255,255,255,.35);
+    animation:fall linear infinite;user-select:none;pointer-events:none;}
+  @keyframes fall{to{transform:translateY(115vh) rotate(25deg);}}
+
+  /* ---- START ---- */
+  #screen-start{text-align:center;padding:8px;position:absolute;inset:0;background:linear-gradient(160deg,var(--sky1),var(--sky2));overflow-y:auto;}
+  #screen-start .main-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:0;position:relative;z-index:2;padding:6px 0;}
+  .title-wrap{position:relative;z-index:2;}
+  .mascot{width:88px;height:88px;margin:0 auto 0;animation:bob 1.8s ease-in-out infinite;
+    filter:drop-shadow(0 8px 6px rgba(0,0,0,.25));}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  .game-title{font-size:clamp(1.4rem,6.5vw,2.1rem);font-weight:900;color:#fff;
+    text-shadow:0 4px 0 var(--purple-dark), 0 8px 14px rgba(0,0,0,.25);margin:2px 0;letter-spacing:1px;}
+  .game-sub{color:#fff;font-weight:600;margin:2px 0 8px;font-size:.82rem;text-shadow:0 2px 4px rgba(0,0,0,.2);}
+  .start-actions{display:flex;flex-direction:column;gap:9px;align-items:center;z-index:2;position:relative;}
+  .start-actions .btn, .footer-area .btn{width:72vw;max-width:260px;height:52px;min-height:52px;display:flex;
+    align-items:center;justify-content:center;text-align:center;line-height:1.25;font-size:.88rem;padding:6px 18px;}
+  .btn-teal{background:#17b3a3;box-shadow:0 6px 0 #0d8478;}
+  .btn-orange{background:#FF8A3D;box-shadow:0 6px 0 #c05f17;}
+  .btn-locked{opacity:.55;filter:grayscale(.4);}
+  .footer-area{margin-top:6px;padding-bottom:4px;z-index:2;position:relative;display:flex;flex-direction:column;gap:6px;align-items:center;flex:0 0 auto;}
+  .credit{color:rgba(255,255,255,.9);font-size:.74rem;font-weight:600;}
+
+  /* ---- LEARN pages ---- */
+  #screen-learn-1, #screen-learn-2, #screen-learn-3{background:linear-gradient(160deg,var(--sky1),var(--sky2));}
+  .learn-page{flex:1;display:flex;flex-direction:column;padding:2px 14px 12px;overflow-y:auto;min-height:0;}
+  .learn-page h2{color:#fff;text-align:center;margin:2px 0 8px;font-size:clamp(1rem,4.5vw,1.25rem);
+    text-shadow:0 3px 0 var(--purple-dark);}
+  .learn-content{flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px;min-height:0;}
+  .card{background:var(--cream);border-radius:16px;padding:12px 14px;box-shadow:0 8px 20px rgba(0,0,0,.15);}
+  .card p{line-height:1.7;margin:0 0 8px;font-size:.86rem;}
+  .card p:last-child{margin-bottom:0;}
+  .card b{color:var(--purple);}
+  .example-row{display:flex;gap:8px;}
+  .example-chip{flex:1;background:#fff;border-radius:12px;padding:8px;text-align:center;font-weight:700;font-size:.78rem;}
+  .example-chip.prime{border:3px solid #3fae55;color:#227a33;}
+  .example-chip.comp{border:3px solid #e05d5d;color:#b23c3c;}
+  .example-chip .big{font-size:1.4rem;display:block;margin-bottom:2px;}
+
+  #sieveStatus{background:#fff;border-radius:13px;padding:8px 10px;font-weight:700;font-size:.76rem;
+    text-align:center;min-height:2.6em;display:flex;align-items:center;justify-content:center;color:var(--purple-dark);}
+  .sieve-grid-wrap{width:min(88vw, 40vh);margin:0 auto;aspect-ratio:1/1;}
+  .sieve-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:2.5px;width:100%;height:100%;}
+  .sieve-cell{display:flex;align-items:center;justify-content:center;
+    background:#fff;border:1.3px solid #ddd;border-radius:4px;font-weight:700;font-size:clamp(.45rem,2.3vw,.62rem);
+    transition:all .25s;color:#666;}
+  .sieve-cell.current{background:var(--purple);color:#fff;border-color:var(--purple-dark);transform:scale(1.15);}
+  .sieve-cell.composite{background:#ffd7d7;color:#b23c3c;border-color:#f0a8a8;}
+  .sieve-cell.prime{background:#c9f5cf;color:#227a33;border-color:#7fd68f;font-weight:900;}
+  .sieve-cell.neutral{background:#eee;color:#aaa;}
+
+  .quiz-wrap{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;}
+  .quiz-chip{display:inline-flex;align-items:center;justify-content:center;min-width:40px;height:40px;
+    border-radius:12px;background:#fff;border:3px solid #ddd;font-weight:800;font-size:.85rem;
+    cursor:pointer;transition:all .15s;}
+  .quiz-chip.selected{border-color:var(--purple);background:#ece6ff;}
+  .quiz-chip.correct{background:#c9f5cf;border-color:#3fae55;}
+  .quiz-chip.incorrect{background:#ffd7d7;border-color:#e05d5d;}
+  #quizResult{text-align:center;font-weight:800;font-size:.8rem;min-height:1.3em;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.2);}
+
+  .learn-nav{display:flex;justify-content:space-between;gap:8px;padding-top:8px;flex:0 0 auto;}
+  .learn-nav .btn{flex:1;}
+
+  /* ---- GAME ---- */
+  #screen-game{padding:0;}
+  #hud{display:flex;align-items:center;justify-content:space-between;padding:5px 8px;
+    background:rgba(0,0,0,.28);color:#fff;font-weight:800;font-size:.72rem;gap:4px;flex-wrap:wrap;position:relative;z-index:8;}
+  #hud .stat{display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.15);
+    padding:4px 7px;border-radius:10px;}
+  #progressBarWrap{flex:0 0 100%;height:5px;background:rgba(255,255,255,.25);border-radius:4px;overflow:hidden;margin-top:5px;}
+  #progressBarFill{height:100%;background:linear-gradient(90deg,#FFD877,#FFC93C);border-radius:4px;transition:width .25s;}
+  .level-toast{position:absolute;top:64px;left:50%;transform:translateX(-50%);background:rgba(20,15,35,.85);
+    color:#fff;padding:10px 16px;border-radius:14px;font-weight:700;font-size:.78rem;text-align:center;
+    z-index:15;opacity:0;pointer-events:none;transition:opacity .4s;max-width:88%;line-height:1.6;}
+  .level-toast.show{opacity:1;}
+  .power-banner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.82);
+    background:rgba(20,15,40,.93);color:#fff;padding:20px 24px;border-radius:22px;
+    font-weight:900;font-size:1.28rem;text-align:center;z-index:25;opacity:0;white-space:pre-line;
+    transition:opacity .25s, transform .25s;pointer-events:none;max-width:86%;line-height:1.75;
+    box-shadow:0 10px 30px rgba(0,0,0,.4);border:2px solid rgba(255,255,255,.18);}
+  .power-banner.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
+  .canvas-wrap{position:relative;width:100%;flex:1;display:flex;align-items:center;justify-content:center;
+    background:#000;min-height:0;}
+  #gameCanvas{width:100%;height:100%;max-height:100%;display:block;touch-action:manipulation;}
+  #mobile-controls{position:absolute;bottom:12px;left:0;right:0;display:flex;justify-content:space-between;
+    align-items:center;padding:0 14px;pointer-events:none;z-index:6;}
+  .ctrl-btn{pointer-events:auto;width:62px;height:62px;border-radius:50%;border:none;position:relative;
+    font-weight:900;font-size:1.4rem;color:#fff;box-shadow:0 6px 0 rgba(0,0,0,.3);user-select:none;
+    display:flex;align-items:center;justify-content:center;}
+  .ctrl-btn:active{transform:translateY(5px);box-shadow:none;}
+  .ctrl-btn:disabled{opacity:.4;filter:grayscale(.4);}
+  .ctrl-btn:disabled:active{transform:none;box-shadow:0 6px 0 rgba(0,0,0,.3);}
+  #jumpBtn{background:var(--purple);}
+  #shootBtn{background:var(--coral);display:none;}
+  #shieldBtn{background:#5FC4FF;display:none;width:54px;height:54px;font-size:1.2rem;}
+  #blastBtn{background:#FF3D71;box-shadow:0 6px 0 #b8244f;display:none;width:54px;height:54px;font-size:1.15rem;}
+  .ctrl-badge{position:absolute;top:-6px;left:-6px;background:#FFC93C;color:#5a3d00;font-size:.72rem;
+    font-weight:900;min-width:20px;height:20px;padding:0 3px;border-radius:10px;display:flex;
+    align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,.35);}
+
+  .popover{position:absolute;top:52px;left:8px;background:#fff;border-radius:16px;padding:12px;
+    box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:50;display:none;width:200px;}
+  .popover.open{display:block;}
+  .popover h4{margin:0 0 8px;font-size:.8rem;color:var(--dark);}
+  .swatches{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px;}
+  .swatch{width:30px;height:30px;border-radius:50%;cursor:pointer;border:3px solid #fff;box-shadow:0 0 0 2px #ddd;}
+  .swatch:active{transform:scale(.9);}
+  .popover input[type=color]{width:100%;height:34px;border:none;border-radius:10px;cursor:pointer;}
+
+  .overlay{position:absolute;inset:0;background:rgba(15,10,35,.82);display:none;
+    align-items:center;justify-content:center;z-index:30;text-align:center;padding:16px;}
+  .overlay.show{display:flex;}
+  .overlay-box{background:var(--cream);border-radius:20px;padding:24px 20px;max-width:300px;width:100%;
+    box-shadow:0 20px 40px rgba(0,0,0,.4);}
+  .overlay-box h2{margin:0 0 8px;font-size:1.25rem;color:var(--purple);}
+  .overlay-box p{margin:0 0 16px;font-weight:700;font-size:.92rem;}
+  .overlay-actions{display:flex;flex-direction:column;gap:9px;}
+  .help-box{max-width:340px;max-height:82vh;max-height:82dvh;display:flex;flex-direction:column;text-align:right;}
+  .help-box h2{text-align:center;}
+  .help-menu{display:flex;flex-direction:column;gap:10px;flex:1;min-height:0;overflow-y:auto;margin-bottom:12px;padding:2px;}
+  .help-intro{margin:0 0 2px;font-size:.84rem;line-height:1.9;font-weight:700;color:var(--dark);
+    text-align:justify;text-justify:inter-word;}
+  .help-menu-btn{background:#fff;border:2px solid #ece6ff;border-radius:14px;padding:14px 16px;
+    font-family:inherit;font-weight:800;font-size:.92rem;color:var(--dark);text-align:right;cursor:pointer;
+    box-shadow:0 3px 0 #ece6ff;transition:transform .08s;}
+  .help-menu-btn:active{transform:translateY(3px);box-shadow:none;}
+  .help-actions{display:flex;flex-direction:column;gap:8px;flex:0 0 auto;}
+  .help-scroll{overflow-y:auto;flex:1;min-height:0;margin-bottom:12px;padding-left:4px;}
+  .help-item{background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:.82rem;line-height:1.8;color:#3a3120;}
+  .help-item b{color:var(--purple);}
+  .help-heading{color:var(--purple-dark);font-weight:900;font-size:.92rem;margin:14px 0 6px;}
+  .help-heading:first-child{margin-top:0;}
+  .help-box .btn{flex:0 0 auto;}
+
+
+  /* ---- FOCUS GAME ---- */
+  #screen-focus{background:linear-gradient(160deg,var(--sky1),var(--sky2));}
+  .focus-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:16px;position:relative;min-height:0;}
+  #focusHud{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  #focusHud .stat{background:rgba(255,255,255,.22);color:#fff;padding:5px 10px;border-radius:10px;font-weight:800;font-size:.8rem;}
+  #focusTimerWrap{width:80%;max-width:280px;height:8px;background:rgba(255,255,255,.3);border-radius:6px;overflow:hidden;}
+  #focusTimerFill{height:100%;width:100%;background:linear-gradient(90deg,#FFD877,#FF6B6B);}
+  #focusNumberWrap{width:150px;height:150px;border-radius:50%;background:#fff;display:flex;align-items:center;
+    justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,.25);}
+  #focusNumber{font-size:3.2rem;font-weight:900;color:var(--dark);}
+  #focusFeedback{min-height:2.5em;display:flex;align-items:center;justify-content:center;text-align:center;}
+  .focus-feedback-pill{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:14px;
+    font-weight:900;font-size:.95rem;color:#fff;box-shadow:0 6px 14px rgba(0,0,0,.3), 0 0 0 2px rgba(255,255,255,.35) inset;
+    opacity:0;transform:scale(.7);transition:opacity .15s ease-out, transform .15s ease-out;white-space:nowrap;}
+  .focus-feedback-pill.show{opacity:1;transform:scale(1);}
+  .focus-feedback-pill.correct{background:#2c9e46;}
+  .focus-feedback-pill.wrong{background:#d94b4b;}
+  #focusButtons{display:flex;gap:16px;width:100%;max-width:320px;}
+  .focus-btn{flex:1;padding:18px 10px;border:none;border-radius:18px;font-weight:900;font-size:1.05rem;
+    color:#fff;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.25);font-family:inherit;}
+  .focus-btn:active{transform:translateY(6px);box-shadow:none;}
+  #focusBtnPrime{background:#3fae55;box-shadow:0 6px 0 #2c7c3d;}
+  #focusBtnComposite{background:#e05d5d;box-shadow:0 6px 0 #a03e3e;}
+  .focus-rule-reminder{color:rgba(255,255,255,.9);font-weight:700;font-size:.78rem;margin:0;}
+
+  .paper-card{background:#FFF8E1;border-radius:6px;padding:26px 22px;max-width:310px;width:100%;
+    box-shadow:0 20px 40px rgba(0,0,0,.4);position:relative;transform:rotate(-1deg);
+    border:1px solid #e8dcb0;}
+  .paper-card h2{margin:6px 0 12px;color:var(--dark);text-align:center;font-size:1.15rem;}
+  .paper-card p{font-size:.85rem;line-height:1.8;margin:0 0 10px;color:#3a3120;}
+  .paper-card .btn{width:100%;margin-top:6px;}
+  .paper-pin{position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:1.5rem;}
+</style>
+</head>
+<body>
+<div id="viewport-fill">
+<div id="app">
+
+  <!-- ============ START ============ -->
+  <section id="screen-start" class="screen">
+    <div class="topbar">
+      <div class="spacer"></div>
+      <button class="icon-btn" onclick="openHelp()" title="راهنما">❓</button>
+      <button class="icon-btn palette-btn" onclick="togglePalette()" title="رنگ و تم">🎨</button>
+      <button class="icon-btn mute-btn" onclick="toggleMute()" title="قطع/وصل صدا">🔊</button>
+      <button class="icon-btn music-btn" onclick="toggleMusic()" title="آهنگ پس‌زمینه">🎵</button>
+    </div>
+    <div id="floatWrap"></div>
+    <div class="main-content">
+      <div class="title-wrap">
+        <canvas id="mascotCanvas" class="mascot" width="140" height="140"></canvas>
+        <h1 class="game-title">شکارچی اعداد اول</h1>
+        <p class="game-sub">فقط اعداد اول رو بخور، از بقیه با پرش رد شو! 🎮</p>
+      </div>
+      <div class="start-actions">
+        <button class="btn btn-gold" onclick="goToLearn()">📘 آموزش اعداد اول</button>
+        <button class="btn btn-purple" onclick="startNewGame()">🚀 شروع بازی</button>
+        <button class="btn btn-teal" id="focusBtn" onclick="goToFocus()">🧠 بازی تمرکزی</button>
+        <button class="btn btn-orange" id="clipBtn" onclick="openExternal('https://www.aparat.com/v/mxq5h12')">🎬 کلیپ رازهای اعداد اول</button>
+      </div>
+    </div>
+    <div class="footer-area">
+      <button class="btn btn-outline" onclick="window.open('http://eitaa.com/riazibabazi','_blank')">📣 بازی‌های بیشتر در<br>کانال ریاضی بازی</button>
+      <div class="credit">طراحی شده توسط ف. شیخانی</div>
+    </div>
+  </section>
+
+  <!-- ============ LEARN PAGE 1 ============ -->
+  <section id="screen-learn-1" class="screen">
+    <div class="topbar">
+      <button class="icon-btn" onclick="goHome()" title="صفحه اصلی">🏠</button>
+      <div class="spacer"></div>
+      <button class="icon-btn palette-btn" onclick="togglePalette()">🎨</button>
+      <button class="icon-btn mute-btn" onclick="toggleMute()">🔊</button>
+      <button class="icon-btn music-btn" onclick="toggleMusic()" title="آهنگ پس‌زمینه">🎵</button>
+    </div>
+    <div class="learn-page">
+      <h2>🔍 عدد اول چیست؟</h2>
+      <div class="learn-content">
+        <div class="card">
+          <p>یک عدد <b>اول</b> عددیه بزرگ‌تر از ۱ که فقط بر <b>۱</b> و <b>خودش</b> بخش‌پذیره. عددی که بخش‌پذیر دیگه‌ای هم داشته باشه، «مرکب»ه.</p>
+          <p>نکته: عدد <b>۱</b> نه اول هست نه مرکب، و <b>۲</b> تنها عدد اول زوجه!</p>
+        </div>
+        <div class="example-row">
+          <div class="example-chip prime"><span class="big">۷</span>فقط ۱×۷ ➜ اول ✅</div>
+          <div class="example-chip comp"><span class="big">۸</span>۱×۸ و ۲×۴ ➜ مرکب ❌</div>
+        </div>
+      </div>
+      <div class="learn-nav">
+        <button class="btn btn-purple" onclick="learnNext()">بعدی ◀</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LEARN PAGE 2 ============ -->
+  <section id="screen-learn-2" class="screen">
+    <div class="topbar">
+      <button class="icon-btn" onclick="goHome()" title="صفحه اصلی">🏠</button>
+      <div class="spacer"></div>
+      <button class="icon-btn palette-btn" onclick="togglePalette()">🎨</button>
+      <button class="icon-btn mute-btn" onclick="toggleMute()">🔊</button>
+      <button class="icon-btn music-btn" onclick="toggleMusic()" title="آهنگ پس‌زمینه">🎵</button>
+    </div>
+    <div class="learn-page">
+      <h2>🧪 غربال اراتوستن</h2>
+      <div class="learn-content">
+        <div id="sieveStatus">یه روش قدیمی و باحال برای پیدا کردن اعداد اول تا ۱۰۰. دکمه پایین رو بزن 👇</div>
+        <div class="sieve-grid-wrap"><div id="sieveGrid" class="sieve-grid"></div></div>
+        <div style="display:flex;gap:8px;justify-content:center;">
+          <button class="btn btn-purple btn-sm" id="sieveBtn" onclick="runSieveAnimation()">▶️ شروع</button>
+          <button class="btn btn-outline btn-sm" onclick="resetSieve()">🔄 دوباره</button>
+        </div>
+      </div>
+      <div class="learn-nav">
+        <button class="btn btn-outline" onclick="learnPrev()">▶ قبلی</button>
+        <button class="btn btn-purple" onclick="learnNext()">بعدی ◀</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LEARN PAGE 3 ============ -->
+  <section id="screen-learn-3" class="screen">
+    <div class="topbar">
+      <button class="icon-btn" onclick="goHome()" title="صفحه اصلی">🏠</button>
+      <div class="spacer"></div>
+      <button class="icon-btn palette-btn" onclick="togglePalette()">🎨</button>
+      <button class="icon-btn mute-btn" onclick="toggleMute()">🔊</button>
+      <button class="icon-btn music-btn" onclick="toggleMusic()" title="آهنگ پس‌زمینه">🎵</button>
+    </div>
+    <div class="learn-page">
+      <h2>🎯 حالا خودت امتحان کن!</h2>
+      <div class="learn-content">
+        <div class="card" style="text-align:center;">
+          <p>روی اعدادی که فکر می‌کنی <b>اول</b> هستن بزن، بعد «بررسی پاسخ» رو بزن:</p>
+          <div class="quiz-wrap" id="quizWrap"></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:center;">
+          <button class="btn btn-gold btn-sm" onclick="checkQuiz()">✅ بررسی</button>
+          <button class="btn btn-outline btn-sm" onclick="newQuiz()">🔄 چالش جدید</button>
+        </div>
+        <div id="quizResult"></div>
+      </div>
+      <div class="learn-nav">
+        <button class="btn btn-outline" onclick="learnPrev()">▶ قبلی</button>
+        <button class="btn btn-purple" onclick="learnNext()">🚀 برو به بازی</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GAME ============ -->
+  <section id="screen-game" class="screen">
+    <div id="hud">
+      <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+        <button class="icon-btn" style="width:30px;height:30px;font-size:.85rem;" onclick="goHome()" title="صفحه اصلی">🏠</button>
+        <div class="stat">🏆 <span id="hudScore">0</span></div>
+        <div class="stat">❤️ <span id="hudLives">5</span></div>
+        <div class="stat">🎯 <span id="hudLevel">1</span></div>
+        <div class="stat" id="hudAmmoWrap" style="display:none;">⚽ <span id="hudAmmo">0</span></div>
+        <div class="stat" id="hudShieldWrap" style="display:none;background:rgba(95,196,255,.4);">🛡️ <span id="hudShield">0</span></div>
+        <div class="stat" id="comboWrap" style="display:none;background:rgba(255,201,60,.4);">🔥 <span id="hudCombo">0</span></div>
+      </div>
+      <div style="display:flex;gap:4px;">
+        <button class="icon-btn" style="width:30px;height:30px;font-size:.85rem;" onclick="openHelp()" title="راهنما">❓</button>
+        <button class="icon-btn palette-btn" onclick="togglePalette()">🎨</button>
+        <button class="icon-btn mute-btn" onclick="toggleMute()">🔊</button>
+        <button class="icon-btn music-btn" onclick="toggleMusic()" title="آهنگ پس‌زمینه">🎵</button>
+      </div>
+      <div id="progressBarWrap"><div id="progressBarFill" style="width:0%"></div></div>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="gameCanvas" width="480" height="854"></canvas>
+      <div id="levelToast" class="level-toast"></div>
+      <div id="powerBanner" class="power-banner"></div>
+      <div id="mobile-controls">
+        <button class="ctrl-btn" id="jumpBtn">⬆️</button>
+        <button class="ctrl-btn" id="shieldBtn" onclick="activateShield()">🛡️<span class="ctrl-badge" id="shieldBtnBadge">0</span></button>
+        <button class="ctrl-btn" id="shootBtn">⚽<span class="ctrl-badge" id="shootBtnBadge">0</span></button>
+        <button class="ctrl-btn" id="blastBtn" onclick="activateBlast()">💥<span class="ctrl-badge" id="blastBtnBadge">0</span></button>
+      </div>
+      <div class="overlay" id="overlayLevelComplete">
+        <div class="overlay-box">
+          <h2>🎉 آفرین!</h2>
+          <p id="levelCompleteText">مرحله تموم شد!</p>
+          <div class="overlay-actions">
+            <button class="btn btn-purple" onclick="nextLevel()">➡️ مرحله بعد</button>
+          </div>
+        </div>
+      </div>
+      <div class="overlay" id="overlayGameOver">
+        <div class="overlay-box">
+          <h2 id="gameOverTitle">😅 بازی تموم شد</h2>
+          <p id="gameOverText">امتیاز نهایی: 0</p>
+          <div class="overlay-actions">
+            <button class="btn btn-purple" id="retryBtn" onclick="retryLevel()">🔁 تلاش دوباره</button>
+            <button class="btn btn-outline" onclick="goHome()">🏠 بازگشت به منو</button>
+          </div>
+        </div>
+      </div>
+      <div class="overlay" id="overlayWin">
+        <div class="overlay-box">
+          <h2>🏆 قهرمان اعداد اول شدی!</h2>
+          <p id="winText">همه‌ی مرحله‌ها رو رد کردی!</p>
+          <div class="overlay-actions">
+            <button class="btn btn-purple" onclick="startNewGame()">🔁 دوباره بازی کن</button>
+            <button class="btn btn-outline" onclick="goHome()">🏠 بازگشت به منو</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOCUS GAME (reversed answer reflex mode) ============ -->
+  <section id="screen-focus" class="screen">
+    <div class="topbar">
+      <button class="icon-btn" onclick="goHome()" title="صفحه اصلی">🏠</button>
+      <div class="spacer"></div>
+      <button class="icon-btn palette-btn" onclick="togglePalette()">🎨</button>
+      <button class="icon-btn mute-btn" onclick="toggleMute()">🔊</button>
+      <button class="icon-btn music-btn" onclick="toggleMusic()">🎵</button>
+    </div>
+    <div class="focus-wrap">
+      <div id="focusHud">
+        <div class="stat">🏆 <span id="focusScore">0</span></div>
+        <div class="stat">❤️ <span id="focusLives">3</span></div>
+        <div class="stat">🔥 <span id="focusStreak">0</span></div>
+      </div>
+      <div id="focusTimerWrap"><div id="focusTimerFill"></div></div>
+      <div id="focusNumberWrap"><div id="focusNumber">۷</div></div>
+      <div id="focusFeedback"></div>
+      <div id="focusButtons">
+        <button class="focus-btn" id="focusBtnPrime" onclick="focusAnswer(true)">اول</button>
+        <button class="focus-btn" id="focusBtnComposite" onclick="focusAnswer(false)">مرکب</button>
+      </div>
+      <p class="focus-rule-reminder">یادت باشه: برعکس جواب بده! 🔄</p>
+    </div>
+
+    <div class="overlay" id="overlayFocusIntro">
+      <div class="paper-card">
+        <div class="paper-pin">📌</div>
+        <h2>🧠 بازی تمرکزی</h2>
+        <p>این بازی یه ترفند داره: باید <b>برعکس</b> جواب بدی!</p>
+        <p>✅ اگه عدد <b>اول</b> بود ➜ دکمه‌ی «مرکب» رو بزن</p>
+        <p>✅ اگه عدد <b>مرکب</b> بود ➜ دکمه‌ی «اول» رو بزن</p>
+        <p>یه تایمر کوتاه هم داری، پس حسابی تمرکز کن! با ۳ اشتباه بازی تموم می‌شه.</p>
+        <button class="btn btn-purple" onclick="startFocusGame()">بزن بریم! 🚀</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="overlayFocusOver">
+      <div class="overlay-box">
+        <h2>🧠 نتیجه‌ی تمرکز</h2>
+        <p id="focusResultText">امتیاز: 0</p>
+        <div class="overlay-actions">
+          <button class="btn btn-purple" onclick="showFocusIntro()">🔁 دوباره امتحان کن</button>
+          <button class="btn btn-outline" onclick="goHome()">🏠 بازگشت به منو</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="globalToast" class="level-toast" style="top:auto;bottom:80px;"></div>
+
+  <div class="overlay" id="overlayHelp" style="z-index:70;">
+    <div class="overlay-box help-box">
+      <h2>❓ راهنمای بازی</h2>
+      <div id="helpMenu" class="help-menu">
+        <p class="help-intro">اول آموزش رو ببین، بعد بازی کن و تا مرحله آخر برو تا بازی تمرکزی رو باز کنی. اگه در مورد هر قسمت سوال داری، همون رو انتخاب کن و راهنماش رو بخون</p>
+        <button class="help-menu-btn" onclick="showHelpSection('controls')">🎮 کنترل‌ها</button>
+        <button class="help-menu-btn" onclick="showHelpSection('levels')">🚀 مرحله به مرحله</button>
+        <button class="help-menu-btn" onclick="showHelpSection('powers')">🎁 قابلیت‌های ویژه</button>
+        <button class="help-menu-btn" onclick="showHelpSection('lives')">❤️ جون و تلاش دوباره</button>
+        <button class="help-menu-btn" onclick="showHelpSection('extra')">🧠 بازی تمرکزی</button>
+      </div>
+      <div id="helpContent" class="help-scroll" style="display:none;"></div>
+      <div class="help-actions">
+        <button class="btn btn-outline" id="helpBackBtn" onclick="showHelpMenu()" style="display:none;">◀ بازگشت به فهرست</button>
+        <button class="btn btn-purple" onclick="closeHelp()">فهمیدم! 👍</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="popover" id="palettePopover">
+    <h4>رنگ آسمون رو انتخاب کن</h4>
+    <div class="swatches" id="swatchWrap"></div>
+    <input type="color" id="customColor" oninput="applyCustomColor(this.value)">
+  </div>
+</div>
+</div>
+
+<script>
+/* ============================================================ UTIL ============================================================ */
+/* ============================================================ ROBUST FULL-SCREEN SIZING ============================================================
+   Some in-app browsers / WebViews (e.g. messenger apps) report vh/dvh unreliably,
+   leaving blank space below the app and a visible seam. Measuring the real visible
+   viewport in JS and applying it directly is far more robust than CSS alone. */
+function sizeApp(){
+  const fill=document.getElementById('viewport-fill');
+  const app=document.getElementById('app');
+  if(!fill||!app) return;
+  // #viewport-fill is position:fixed + inset:0, which browsers resolve against the real,
+  // currently-visible viewport (toolbars/gesture bars accounted for), even in WebViews that
+  // get vh/dvh/innerHeight wrong -- so its own measured pixel box is the primary source.
+  const rect=fill.getBoundingClientRect();
+  let h = Math.round(rect.height);
+  let w = Math.round(rect.width);
+  // Fall back to visualViewport (the true "currently visible" size -- shrinks correctly for
+  // on-screen keyboards/toolbars) and only then to innerHeight/innerWidth.
+  // IMPORTANT: never fall back to document.documentElement.clientHeight/clientWidth here.
+  // Those reflect the browser's "large viewport" (the size assuming toolbars are hidden),
+  // even while toolbars are actually showing -- using it would overestimate the visible
+  // height and push bottom UI (buttons) off-screen behind the toolbar/gesture bar. That
+  // was a real regression on phones; do not reintroduce it.
+  if(!h || h<=0) h = Math.round((window.visualViewport && window.visualViewport.height) || window.innerHeight);
+  if(!w || w<=0) w = Math.round((window.visualViewport && window.visualViewport.width) || window.innerWidth);
+  if(h<=0||w<=0) return;
+  const targetW=Math.min(w, Math.round(h*9/16));
+  app.style.height=h+'px';
+  app.style.width=targetW+'px';
+  // also pin the outer wrapper explicitly -- some WebViews mis-measure 100vh/dvh on their own
+  fill.style.height=h+'px';
+  fill.style.width=w+'px';
+}
+sizeApp();
+window.addEventListener('load', sizeApp);
+window.addEventListener('resize', sizeApp);
+window.addEventListener('orientationchange', ()=>{ setTimeout(sizeApp,60); setTimeout(sizeApp,350); });
+window.addEventListener('touchend', sizeApp, {passive:true});
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) sizeApp(); });
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', sizeApp);
+  window.visualViewport.addEventListener('scroll', sizeApp);
+}
+if(window.ResizeObserver){
+  const ro=new ResizeObserver(sizeApp);
+  ro.observe(document.getElementById('viewport-fill'));
+}
+// Extra safety net: some in-app browsers never fire resize when their chrome (address bar,
+// nav bar) shows/hides, so poll for a few seconds after load to guarantee a correct fit.
+[100,300,700,1200,2000,3000,4500].forEach(t=>setTimeout(sizeApp,t));
+let sizePollCount=0;
+const sizePollTimer=setInterval(()=>{ sizeApp(); if(++sizePollCount>20) clearInterval(sizePollTimer); }, 500);
+
+function isPrime(n){
+  if(n<2) return false;
+  if(n<4) return true;
+  if(n%2===0) return false;
+  for(let i=3;i*i<=n;i+=2){ if(n%i===0) return false; }
+  return true;
+}
+function toFa(num){ const fa=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹']; return String(num).replace(/[0-9]/g,d=>fa[d]); }
+let currentScreenId='screen-start';
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('palettePopover').classList.remove('open');
+  currentScreenId=id;
+  updateBackButton();
+}
+
+/* ============================================================ EITAA SDK: BACK BUTTON & LINKS ============================================================ */
+const EW = (window.Eitaa && window.Eitaa.WebApp) ? window.Eitaa.WebApp : null;
+
+function openExternal(url){
+  if(EW && typeof EW.openLink==='function'){
+    try{ EW.openLink(url); return; }catch(e){}
+  }
+  window.open(url,'_blank');
+}
+function isHelpOpen(){ return document.getElementById('overlayHelp').classList.contains('show'); }
+
+/* Back = one step back inside the app (help -> close, learn pages -> previous page, game/focus -> home).
+   Only on the home screen does the back button hand control to Eitaa, which closes the mini-app. */
+function handleBack(){
+  if(isHelpOpen()){
+    if(document.getElementById('helpContent').style.display==='block') showHelpMenu(); else closeHelp();
+    return;
+  }
+  const pop=document.getElementById('palettePopover');
+  if(pop.classList.contains('open')){ pop.classList.remove('open'); return; }
+  switch(currentScreenId){
+    case 'screen-learn-2':
+    case 'screen-learn-3': learnPrev(); break;
+    case 'screen-start':
+      if(EW && typeof EW.close==='function') EW.close();
+      break;
+    default: goHome();
+  }
+}
+let histArmed=false, ignorePop=false;
+function updateBackButton(){
+  const show = currentScreenId!=='screen-start' || isHelpOpen();
+  if(EW && EW.BackButton){
+    try{ if(show) EW.BackButton.show(); else EW.BackButton.hide(); }catch(e){}
+    return;
+  }
+  /* Fallback outside Eitaa (normal browser): use the history API so the phone's back button behaves the same */
+  try{
+    if(show && !histArmed){ history.pushState({app:1},''); histArmed=true; }
+    else if(!show && histArmed){ histArmed=false; ignorePop=true; history.back(); }
+  }catch(e){}
+}
+window.addEventListener('popstate',()=>{
+  if(ignorePop){ ignorePop=false; return; }
+  if(!histArmed) return;
+  histArmed=false;
+  handleBack();
+  updateBackButton();
+});
+if(EW){
+  try{
+    if(EW.BackButton) EW.BackButton.onClick(handleBack);
+    if(typeof EW.onEvent==='function') EW.onEvent('viewportChanged', sizeApp);
+  }catch(e){ console.warn('Eitaa SDK setup failed', e); }
+}
+
+/* ============================================================ AUDIO ============================================================ */
+let audioCtx=null, sfxMuted=false, musicMuted=false, musicTimer=null;
+function ensureAudio(){ if(!audioCtx){ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(!musicTimer) scheduleMusic(); } if(audioCtx.state==='suspended') audioCtx.resume(); }
+function tone(freq,dur,type='sine',vol=0.18,delay=0,isMusic=false){
+  if((isMusic?musicMuted:sfxMuted)||!audioCtx) return;
+  const t=audioCtx.currentTime+delay;
+  const osc=audioCtx.createOscillator(); const gain=audioCtx.createGain();
+  osc.type=type; osc.frequency.setValueAtTime(freq,t);
+  gain.gain.setValueAtTime(vol,t); gain.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(t); osc.stop(t+dur+0.02);
+}
+function sndJump(){ tone(520,0.12,'triangle',0.15); tone(700,0.1,'triangle',0.1,0.06); }
+function sndCoin(){ tone(880,0.09,'square',0.13); tone(1318,0.13,'square',0.12,0.08); }
+function sndWrong(){ tone(160,0.28,'sawtooth',0.18); tone(110,0.3,'sawtooth',0.15,0.05); }
+function sndPop(){ tone(300,0.06,'square',0.14); tone(150,0.12,'square',0.12,0.05); }
+function sndLevelUp(){ [523,659,784,1047].forEach((f,i)=>tone(f,0.18,'triangle',0.15,i*0.11)); }
+function sndFanfare(){
+  [523,523,523,659,784,880,1047].forEach((f,i)=>tone(f,0.22,'triangle',0.17,i*0.13));
+}
+function sndGameOver(){ [400,340,280,220].forEach((f,i)=>tone(f,0.25,'sawtooth',0.14,i*0.14)); }
+function sndSlowMo(){ tone(200,0.5,'sine',0.16); tone(150,0.6,'sine',0.14,0.15); tone(500,0.3,'triangle',0.1,0.05); }
+
+const chordProg=[[261.6,329.6,392.0],[293.7,349.2,440.0],[220.0,277.2,329.6],[349.2,440.0,523.3]];
+let chordIdx=0;
+function scheduleMusic(){
+  function step(){
+    if(!musicMuted && audioCtx){ const chord=chordProg[chordIdx%chordProg.length]; chord.forEach(f=>tone(f,1.6,'sine',0.035,0,true)); chordIdx++; }
+    musicTimer=setTimeout(step,1700);
+  }
+  step();
+}
+function updateMuteIcons(){ document.querySelectorAll('.mute-btn').forEach(b=>b.textContent = sfxMuted? '🔇':'🔊'); }
+function toggleMute(){ ensureAudio(); sfxMuted=!sfxMuted; updateMuteIcons(); }
+function updateMusicIcons(){ document.querySelectorAll('.music-btn').forEach(b=>b.textContent = musicMuted? '🔕':'🎵'); }
+function toggleMusic(){ ensureAudio(); musicMuted=!musicMuted; updateMusicIcons(); }
+
+
+/* ============================================================ HUNTER CHARACTER ============================================================ */
+function drawHunter(c, cx, cy, scale, squash, legPhase, grounded){
+  squash = squash===undefined?1:squash;
+  legPhase = legPhase||0;
+  grounded = grounded===undefined?true:grounded;
+  c.save(); c.translate(cx,cy); c.scale(scale, scale*squash);
+  /* legs (blue trousers under the overalls) */
+  c.fillStyle='#2255C7';
+  if(grounded){
+    const bounce=Math.sin(legPhase)*4;
+    c.beginPath(); c.ellipse(-8, 21+bounce, 5.5,7,0,0,Math.PI*2); c.fill();
+    c.beginPath(); c.ellipse(8, 21-bounce, 5.5,7,0,0,Math.PI*2); c.fill();
+  } else {
+    c.beginPath(); c.ellipse(-6,24,5.5,7,0,0,Math.PI*2); c.fill();
+    c.beginPath(); c.ellipse(6,24,5.5,7,0,0,Math.PI*2); c.fill();
+  }
+  /* brown shoes */
+  c.fillStyle='#6b3d1f';
+  c.beginPath(); c.ellipse(-8,27,6.5,4,0,0,Math.PI*2); c.fill();
+  c.beginPath(); c.ellipse(8,27,6.5,4,0,0,Math.PI*2); c.fill();
+  /* round white gloves */
+  c.fillStyle='#fff'; c.strokeStyle='#e2e2e2'; c.lineWidth=1;
+  c.beginPath(); c.arc(-19,14,7,0,Math.PI*2); c.fill(); c.stroke();
+  c.beginPath(); c.arc(19,14,7,0,Math.PI*2); c.fill(); c.stroke();
+  /* red sleeves */
+  c.fillStyle='#EE3B41';
+  c.beginPath(); c.ellipse(-16,8,7,6,0.5,0,Math.PI*2); c.fill();
+  c.beginPath(); c.ellipse(16,8,7,6,-0.5,0,Math.PI*2); c.fill();
+  /* head */
+  c.fillStyle='#F6C296';
+  c.beginPath(); c.arc(0,0,23,0,Math.PI*2); c.fill();
+  /* red shirt collar under the overalls */
+  c.fillStyle='#EE3B41';
+  c.beginPath(); c.moveTo(-9,13); c.lineTo(9,13); c.lineTo(0,21); c.closePath(); c.fill();
+  /* blue overalls with shoulder straps + gold buttons */
+  c.fillStyle='#2255C7'; c.strokeStyle='#173A8C'; c.lineWidth=1.4;
+  c.beginPath(); c.ellipse(0,16,20,9,0,0,Math.PI); c.fill(); c.stroke();
+  c.beginPath(); c.moveTo(-11,15); c.lineTo(-8,-2); c.lineTo(-3,-2); c.lineTo(-6,15); c.closePath(); c.fill(); c.stroke();
+  c.beginPath(); c.moveTo(11,15); c.lineTo(8,-2); c.lineTo(3,-2); c.lineTo(6,15); c.closePath(); c.fill(); c.stroke();
+  c.fillStyle='#FFC93C';
+  c.beginPath(); c.arc(-5.5,-1,2.3,0,Math.PI*2); c.fill();
+  c.beginPath(); c.arc(5.5,-1,2.3,0,Math.PI*2); c.fill();
+  /* mustache */
+  c.fillStyle='#3B2A1E';
+  c.beginPath(); c.arc(-7.5,6,4.6,0,Math.PI*2); c.fill();
+  c.beginPath(); c.arc(7.5,6,4.6,0,Math.PI*2); c.fill();
+  c.fillRect(-7.5,4.2,15,2.8);
+  /* eyes */
+  c.fillStyle='#fff';
+  c.beginPath(); c.ellipse(-8,-4,6.5,5.5,0,0,Math.PI*2); c.fill();
+  c.beginPath(); c.ellipse(8,-4,6.5,5.5,0,0,Math.PI*2); c.fill();
+  c.fillStyle='#1B1B2F';
+  c.beginPath(); c.arc(-6.5,-3,2.7,0,Math.PI*2); c.fill();
+  c.beginPath(); c.arc(9.5,-3,2.7,0,Math.PI*2); c.fill();
+  /* big round nose */
+  c.fillStyle='#EFA36E';
+  c.beginPath(); c.ellipse(0,1.5,4.4,3.6,0,0,Math.PI*2); c.fill();
+  /* ear */
+  c.fillStyle='#F6C296';
+  c.beginPath(); c.ellipse(20,3,4,5.5,0,0,Math.PI*2); c.fill();
+  /* open smile */
+  c.strokeStyle='#7a4a22'; c.lineWidth=2.2;
+  c.beginPath(); c.arc(0,4,7.5,0.12*Math.PI,0.88*Math.PI); c.stroke();
+  /* red cap, rounder + wider brim like the reference art */
+  c.fillStyle='#EE3B41'; c.strokeStyle='#B71C1C'; c.lineWidth=1.5;
+  c.beginPath(); c.ellipse(5,-18,21,7,0,0,Math.PI*2); c.fill(); c.stroke();
+  c.beginPath(); c.arc(0,-23,18,Math.PI,0); c.fill(); c.stroke();
+  /* plain round emblem patch (no lettering) */
+  c.fillStyle='#fff'; c.strokeStyle='#B71C1C'; c.lineWidth=1.2;
+  c.beginPath(); c.arc(-1,-27,6,0,Math.PI*2); c.fill(); c.stroke();
+  c.restore();
+}
+function drawHunterSide(c, cx, cy, scale, squash, legPhase, grounded){
+  squash = squash===undefined?1:squash;
+  legPhase = legPhase||0;
+  grounded = grounded===undefined?true:grounded;
+  /* Side-profile hunter, facing right (direction of travel) -- used only
+     for the in-game running character. Origin (0,0) sits at roughly head
+     height: feet land around y=+27, cap top around y=-33. */
+  c.save(); c.translate(cx,cy); c.scale(scale, scale*squash);
+
+  const swing = Math.sin(legPhase);
+  const strideBack  = grounded ?  swing*9 : -3;
+  const strideFront = grounded ? -swing*9 :  5;
+
+  function leg(hipX, stride, liftSign){
+    const kneeX=hipX+stride*0.25, footX=hipX+stride*0.55;
+    const lift = grounded ? Math.max(0,Math.cos(legPhase*liftSign))*3 : 0;
+    c.strokeStyle='#2255C7'; c.lineWidth=8.5; c.lineCap='round';
+    c.beginPath(); c.moveTo(hipX,9); c.quadraticCurveTo(kneeX,19-lift,footX,26-lift); c.stroke();
+    c.fillStyle='#5a3316';
+    c.beginPath(); c.ellipse(footX+(stride>=0?3:-3), 27-lift, 7,4,0,0,Math.PI*2); c.fill();
+  }
+
+  /* back leg (behind torso) */
+  leg(-2, strideBack, -1);
+
+  /* torso: a leaning capsule -- narrow chest, fuller hip -- not a round blob */
+  c.fillStyle='#2255C7'; c.strokeStyle='#173A8C'; c.lineWidth=1.6;
+  c.beginPath();
+  c.moveTo(-8,-4);
+  c.quadraticCurveTo(-12,4,-9,14);
+  c.quadraticCurveTo(-2,19,7,15);
+  c.quadraticCurveTo(12,5,9,-6);
+  c.quadraticCurveTo(2,-11,-8,-4);
+  c.closePath(); c.fill(); c.stroke();
+  c.strokeStyle='#173A8C'; c.lineWidth=2;
+  c.beginPath(); c.moveTo(-4,-9); c.lineTo(-2,10); c.stroke();
+  c.fillStyle='#FFC93C';
+  c.beginPath(); c.arc(-2,8,2,0,Math.PI*2); c.fill();
+
+  /* back arm, swings opposite the front leg */
+  c.strokeStyle='#EE3B41'; c.lineWidth=7; c.lineCap='round';
+  const armBack=-strideFront*0.5;
+  c.beginPath(); c.moveTo(-6,-3); c.quadraticCurveTo(-10+armBack*0.3,4,-9+armBack*0.6,12); c.stroke();
+  c.fillStyle='#fff';
+  c.beginPath(); c.arc(-9+armBack*0.6,14,5,0,Math.PI*2); c.fill();
+
+  /* red shirt sliver peeking above the overalls */
+  c.fillStyle='#EE3B41';
+  c.beginPath(); c.moveTo(3,-9); c.lineTo(9,-6); c.lineTo(6,2); c.lineTo(1,-3); c.closePath(); c.fill();
+
+  /* neck */
+  c.fillStyle='#F6C296';
+  c.fillRect(4,-14,7,7);
+
+  /* head, side profile */
+  c.beginPath(); c.arc(8,-21,12,0,Math.PI*2); c.fill();
+  /* ear (back side) */
+  c.beginPath(); c.ellipse(-1,-19,3.2,4.4,0,0,Math.PI*2); c.fill();
+  /* nose bump (front) */
+  c.beginPath(); c.ellipse(19,-19,4.2,3,0.15,0,Math.PI*2); c.fill();
+  /* mustache under the nose */
+  c.fillStyle='#3B2A1E';
+  c.beginPath(); c.ellipse(17,-14.5,5.5,3.2,0.25,0,Math.PI*2); c.fill();
+  /* mouth hint */
+  c.strokeStyle='#7a4a22'; c.lineWidth=1.6;
+  c.beginPath(); c.arc(15,-12,3,0.1*Math.PI,0.7*Math.PI); c.stroke();
+  /* eye */
+  c.fillStyle='#fff';
+  c.beginPath(); c.ellipse(13,-25,4.4,3.6,0,0,Math.PI*2); c.fill();
+  c.fillStyle='#1B1B2F';
+  c.beginPath(); c.arc(14.6,-25,1.9,0,Math.PI*2); c.fill();
+  /* eyebrow */
+  c.strokeStyle='#3B2A1E'; c.lineWidth=2; c.lineCap='round';
+  c.beginPath(); c.moveTo(9,-29); c.lineTo(17,-28.5); c.stroke();
+
+  /* cap: dome + forward-pointing brim */
+  c.fillStyle='#EE3B41'; c.strokeStyle='#B71C1C'; c.lineWidth=1.5;
+  c.beginPath(); c.arc(6,-27,13,Math.PI*1.02,Math.PI*2.05); c.fill(); c.stroke();
+  c.beginPath(); c.ellipse(16,-24,8,3.4,-0.15,-Math.PI*0.5,Math.PI*0.55); c.fill(); c.stroke();
+  /* emblem */
+  c.fillStyle='#fff'; c.strokeStyle='#B71C1C'; c.lineWidth=1.1;
+  c.beginPath(); c.arc(3,-32,5,0,Math.PI*2); c.fill(); c.stroke();
+
+  /* front arm (over torso), swings with front leg */
+  c.strokeStyle='#EE3B41'; c.lineWidth=7.5; c.lineCap='round';
+  const armFront=strideFront*0.6;
+  c.beginPath(); c.moveTo(7,-4); c.quadraticCurveTo(11+armFront*0.4,3,10+armFront*0.7,11); c.stroke();
+  c.fillStyle='#fff';
+  c.beginPath(); c.arc(10+armFront*0.7,13,5.4,0,Math.PI*2); c.fill();
+
+  /* front leg (over torso and back leg) */
+  leg(3, strideFront, 1);
+
+  c.restore();
+}
+(function initMascot(){
+  const mc=document.getElementById('mascotCanvas'); const mctx=mc.getContext('2d');
+  drawHunter(mctx,70,86,2.15,1,0,true);
+})();
+
+(function initFloatingNums(){
+  const wrap=document.getElementById('floatWrap');
+  for(let i=0;i<14;i++){
+    const s=document.createElement('span'); s.className='float-num';
+    s.textContent = Math.floor(Math.random()*90)+2;
+    s.style.left = Math.random()*95+'%';
+    s.style.fontSize = (13+Math.random()*18)+'px';
+    s.style.animationDuration = (7+Math.random()*8)+'s';
+    s.style.animationDelay = (-Math.random()*10)+'s';
+    wrap.appendChild(s);
+  }
+})();
+
+/* ============================================================ HOME / NAV ============================================================ */
+function goHome(){
+  if(game) game.running=false;
+  if(focusGame){ clearTimeout(focusGame.timer); focusGame=null; }
+  levelRetryCount=0; hideOverlays();
+  document.getElementById('overlayFocusIntro').classList.remove('show');
+  document.getElementById('overlayFocusOver').classList.remove('show');
+  showScreen('screen-start');
+}
+
+/* ============================================================ FOCUS GAME (reversed-answer reflex mode) ============================================================ */
+let focusGame=null;
+let focusUnlocked=false;
+function showGlobalToast(text, duration){
+  const el=document.getElementById('globalToast');
+  el.textContent=text; el.classList.add('show');
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.classList.remove('show'), duration||2800);
+}
+function updateFocusButtonState(){
+  const btn=document.getElementById('focusBtn');
+  if(!btn) return;
+  if(focusUnlocked){
+    btn.classList.remove('btn-locked');
+    btn.textContent='🧠 بازی تمرکزی';
+    btn.onclick=goToFocus;
+  } else {
+    btn.classList.add('btn-locked');
+    btn.textContent='🔒 بازی تمرکزی';
+    btn.onclick=function(){ showGlobalToast('🔒 اول باید هر ۵ مرحله‌ی بازی اصلی رو رد کنی تا این بازی باز بشه!', 3000); };
+  }
+}
+function goToFocus(){
+  if(!focusUnlocked) return;
+  ensureAudio();
+  showScreen('screen-focus');
+  showFocusIntro();
+}
+function showFocusIntro(){
+  document.getElementById('overlayFocusOver').classList.remove('show');
+  document.getElementById('overlayFocusIntro').classList.add('show');
+}
+function updateFocusHud(){
+  document.getElementById('focusScore').textContent=toFa(focusGame.score);
+  document.getElementById('focusLives').textContent=toFa(focusGame.lives);
+  document.getElementById('focusStreak').textContent=toFa(focusGame.streak);
+}
+function startFocusGame(){
+  document.getElementById('overlayFocusIntro').classList.remove('show');
+  focusGame={score:0, lives:3, streak:0, bestStreak:0, timer:null, current:0, answered:false};
+  updateFocusHud();
+  nextFocusRound();
+}
+function nextFocusRound(){
+  if(!focusGame) return;
+  focusGame.answered=false;
+  const n=Math.floor(Math.random()*98)+2;
+  focusGame.current=n;
+  document.getElementById('focusNumber').textContent=toFa(n);
+  const fb=document.getElementById('focusFeedback'); fb.innerHTML='';
+  const duration=Math.max(1400, 3000-focusGame.streak*60);
+  const fill=document.getElementById('focusTimerFill');
+  fill.style.transition='none'; fill.style.width='100%';
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      fill.style.transition=`width ${duration}ms linear`;
+      fill.style.width='0%';
+    });
+  });
+  clearTimeout(focusGame.timer);
+  focusGame.timer=setTimeout(focusTimeout, duration);
+}
+function focusTimeout(){
+  if(!focusGame||focusGame.answered) return;
+  focusGame.answered=true;
+  focusWrong('وقت تموم شد! ⏰');
+}
+function focusAnswer(saidPrime){
+  if(!focusGame||focusGame.answered) return;
+  focusGame.answered=true;
+  clearTimeout(focusGame.timer);
+  const actuallyPrime=isPrime(focusGame.current);
+  const isCorrect = saidPrime===!actuallyPrime;
+  if(isCorrect){ focusCorrect(); }
+  else {
+    focusWrong(actuallyPrime? 'اشتباه بود! عدد اول بود، باید «مرکب» می‌زدی' : 'اشتباه بود! عدد مرکب بود، باید «اول» می‌زدی');
+  }
+}
+function showFocusFeedback(text, type){
+  const fb=document.getElementById('focusFeedback');
+  fb.innerHTML=`<span class="focus-feedback-pill ${type}">${text}</span>`;
+  const pill=fb.firstElementChild;
+  // force reflow so the transition (opacity/scale) actually plays instead of snapping in
+  requestAnimationFrame(()=>{ requestAnimationFrame(()=>{ pill.classList.add('show'); }); });
+}
+function focusCorrect(){
+  focusGame.score+=10; focusGame.streak++; focusGame.bestStreak=Math.max(focusGame.bestStreak,focusGame.streak);
+  showFocusFeedback('درست! ✅', 'correct');
+  sndCoin(); updateFocusHud();
+  setTimeout(()=>{ if(focusGame) nextFocusRound(); }, 750);
+}
+function focusWrong(msg){
+  focusGame.streak=0; focusGame.lives--;
+  showFocusFeedback(msg, 'wrong');
+  sndWrong(); updateFocusHud();
+  if(focusGame.lives<=0){ endFocusGame(); return; }
+  setTimeout(()=>{ if(focusGame) nextFocusRound(); }, 1200);
+}
+function endFocusGame(){
+  const g=focusGame; focusGame=null;
+  document.getElementById('focusResultText').textContent = `امتیاز: ${toFa(g.score)} — بهترین رشته: ${toFa(g.bestStreak)} 🔥`;
+  document.getElementById('overlayFocusOver').classList.add('show');
+}
+
+let learnPageIdx=0;
+function showLearnPage(idx){
+  learnPageIdx=idx;
+  showScreen('screen-learn-'+(idx+1));
+  if(idx===1) resetSieve();
+  if(idx===2) newQuiz();
+}
+function goToLearn(){ ensureAudio(); showLearnPage(0); }
+function learnNext(){ if(learnPageIdx<2) showLearnPage(learnPageIdx+1); else startNewGame(); }
+function learnPrev(){ if(learnPageIdx>0) showLearnPage(learnPageIdx-1); }
+
+/* ============================================================ SIEVE ============================================================ */
+function buildSieveGrid(){
+  const grid=document.getElementById('sieveGrid'); grid.innerHTML='';
+  for(let n=1;n<=100;n++){
+    const cell=document.createElement('div'); cell.className='sieve-cell'; cell.id='cell-'+n; cell.textContent=toFa(n);
+    grid.appendChild(cell);
+  }
+  document.getElementById('cell-1').classList.add('neutral');
+}
+function resetSieve(){
+  buildSieveGrid();
+  document.getElementById('sieveBtn').disabled=false;
+  document.getElementById('sieveStatus').textContent='یه روش قدیمی و باحال برای پیدا کردن اعداد اول تا ۱۰۰. دکمه پایین رو بزن 👇';
+  sieveRunning=false;
+}
+let sieveRunning=false;
+function runSieveAnimation(){
+  if(sieveRunning) return;
+  sieveRunning=true;
+  document.getElementById('sieveBtn').disabled=true;
+  const marked=new Array(101).fill(false); marked[1]=true;
+  const primesToCheck=[2,3,5,7];
+  const statusEl=document.getElementById('sieveStatus');
+  let pi=0;
+  function processPrime(){
+    if(pi>=primesToCheck.length){
+      for(let n=2;n<=100;n++){ const cell=document.getElementById('cell-'+n); if(!marked[n]) cell.classList.add('prime'); }
+      statusEl.textContent='🎉 تموم شد! خونه‌های سبز، اعداد اول هستن.';
+      sieveRunning=false;
+      return;
+    }
+    const p=primesToCheck[pi];
+    const pCell=document.getElementById('cell-'+p);
+    if(!marked[p]){
+      statusEl.textContent = `مضرب‌های عدد ${toFa(p)} رو قرمز می‌کنیم، چون اول نیستن...`;
+      pCell.classList.add('current');
+      let m=p*p, delay=300;
+      function markMultiple(){
+        if(m>100){ setTimeout(()=>{ pCell.classList.remove('current'); pi++; processPrime(); },300); return; }
+        if(!marked[m]){ marked[m]=true; document.getElementById('cell-'+m).classList.add('composite'); }
+        m+=p; setTimeout(markMultiple,48);
+      }
+      setTimeout(markMultiple,delay);
+    } else { pi++; processPrime(); }
+  }
+  processPrime();
+}
+buildSieveGrid();
+
+/* ============================================================ QUIZ ============================================================ */
+let quizNumbers=[];
+function newQuiz(){
+  const pool=[]; for(let n=2;n<=60;n++) pool.push(n);
+  quizNumbers=[];
+  while(quizNumbers.length<8){ const idx=Math.floor(Math.random()*pool.length); quizNumbers.push(pool.splice(idx,1)[0]); }
+  const wrap=document.getElementById('quizWrap'); wrap.innerHTML='';
+  document.getElementById('quizResult').textContent='';
+  quizNumbers.forEach(n=>{
+    const chip=document.createElement('div'); chip.className='quiz-chip'; chip.textContent=toFa(n);
+    chip.dataset.num=n; chip.dataset.selected='0';
+    chip.onclick=()=>{ chip.dataset.selected = chip.dataset.selected==='1'?'0':'1'; chip.classList.toggle('selected'); };
+    wrap.appendChild(chip);
+  });
+}
+function checkQuiz(){
+  let correct=0;
+  document.querySelectorAll('.quiz-chip').forEach(chip=>{
+    const n=parseInt(chip.dataset.num); const sel=chip.dataset.selected==='1'; const actual=isPrime(n);
+    chip.classList.remove('correct','incorrect');
+    if(sel===actual){ chip.classList.add('correct'); correct++; } else { chip.classList.add('incorrect'); }
+  });
+  document.getElementById('quizResult').textContent = `امتیاز: ${toFa(correct)} از ${toFa(8)} ✅`;
+}
+
+/* ============================================================ COLOR / THEME ============================================================ */
+const palettes=[
+  {n:'آسمون روز', c1:'#4EC5F1', c2:'#8FE3C7'},
+  {n:'غروب پرتقالی', c1:'#FF9A56', c2:'#FFCB77'},
+  {n:'شب رویایی', c1:'#2E1A47', c2:'#6A3DE8'},
+  {n:'صورتی رویایی', c1:'#FF6FB5', c2:'#FFD1E8'},
+  {n:'جنگل سبز', c1:'#2E7D32', c2:'#8BC34A'},
+  {n:'آتشین', c1:'#D7263D', c2:'#F46036'},
+];
+(function initSwatches(){
+  const wrap=document.getElementById('swatchWrap');
+  palettes.forEach(p=>{
+    const sw=document.createElement('div'); sw.className='swatch'; sw.title=p.n;
+    sw.style.background=`linear-gradient(135deg, ${p.c1}, ${p.c2})`;
+    sw.onclick=()=>{ setSky(p.c1,p.c2); };
+    wrap.appendChild(sw);
+  });
+})();
+let skyColors=['#4EC5F1','#8FE3C7'];
+function setSky(c1,c2){
+  document.documentElement.style.setProperty('--sky1',c1);
+  document.documentElement.style.setProperty('--sky2',c2);
+  skyColors=[c1,c2];
+}
+function lighten(hex,amt){
+  const n=parseInt(hex.slice(1),16);
+  let r=(n>>16)+amt, g=((n>>8)&0xff)+amt, b=(n&0xff)+amt;
+  r=Math.min(255,Math.max(0,r)); g=Math.min(255,Math.max(0,g)); b=Math.min(255,Math.max(0,b));
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+function applyCustomColor(hex){ setSky(hex, lighten(hex,60)); }
+function togglePalette(){ document.getElementById('palettePopover').classList.toggle('open'); }
+document.addEventListener('click',(e)=>{
+  const pop=document.getElementById('palettePopover');
+  if(pop.classList.contains('open') && !pop.contains(e.target) && !e.target.classList.contains('palette-btn')){
+    pop.classList.remove('open');
+  }
+});
+
+/* ============================================================ GAME ENGINE ============================================================ */
+const canvas=document.getElementById('gameCanvas');
+const ctx=canvas.getContext('2d');
+const LOGICAL_W=480, LOGICAL_H=854, GROUND_Y=700;
+const BLOCK_W=36, BLOCK_H=24;
+const ELEV_W=46, ELEV_H=52, ELEV_TOP=GROUND_Y-155;
+const ENEMY_W=36, ENEMY_H=40;
+const JUMP_VY0=-13.5, GRAVITY=0.51;
+const PLAYER_W=42, PLAYER_H=46, PLAYER_X=64;
+const PLAYER_CENTER_X = PLAYER_X + PLAYER_W/2;
+
+/* One shared spawn queue picks ONE thing at a time (ground number / elevated number / enemy),
+   spaced apart in time -- this guarantees two "decisions" never overlap in front of the player. */
+const levelConfigs=[
+  {range:[2,20],  speed:1.7, gap:150, enemies:false, elevated:{enabled:true, forcePrime:true,  punishing:false}, weights:{ground:0.75, elevated:0.25, enemy:0}},
+  {range:[2,50],  speed:2.1, gap:135, enemies:false, elevated:{enabled:true, forcePrime:true,  punishing:true }, weights:{ground:0.65, elevated:0.35, enemy:0}},
+  {range:[2,50],  speed:2.1, gap:135, enemies:true,  elevated:{enabled:true, forcePrime:true,  punishing:true }, weights:{ground:0.55, elevated:0.30, enemy:0.15}},
+  {range:[2,150], speed:2.5, gap:118, enemies:true,  elevated:{enabled:true, forcePrime:false, punishing:true }, weights:{ground:0.50, elevated:0.25, enemy:0.25}},
+  {range:[2,250], speed:2.9, gap:100, enemies:true,  elevated:{enabled:true, forcePrime:false, punishing:true }, weights:{ground:0.42, elevated:0.25, enemy:0.33}},
+];
+const TOTAL_NUMBERS_PER_LEVEL=15;
+const START_LIVES=5;
+
+let game=null;
+
+function freshGameState(levelIdx){
+  const cfg=levelConfigs[levelIdx];
+  return {
+    levelIdx, running:true,
+    score:0, lives:START_LIVES, ammo:cfg.enemies?1:0, combo:0,
+    distance:0, spawnTimer:60, finishing:false, hut:null, numbersSpawned:0, numbersResolved:0, shields:0, shieldWindow:0, slowMoTimer:0, blast:0, blastRing:null, celebrating:0, confetti:[],
+    blocks:[], elevBlocks:[], enemies:[], particles:[], projectiles:[],
+    flash:{alpha:0,r:255,g:80,b:80},
+    player:{x:PLAYER_X, y:GROUND_Y-PLAYER_H, w:PLAYER_W, h:PLAYER_H, vy:0, grounded:true, squash:1},
+  };
+}
+
+function startNewGame(){
+  ensureAudio();
+  levelRetryCount=0;
+  game=freshGameState(0);
+  applyLevelUI();
+  updateHudScore(); updateHudLives(); updateHudAmmo(); updateComboUI(); updateHudShield();
+  showScreen('screen-game');
+  hideOverlays();
+  requestAnimationFrame(loop);
+}
+function showToast(text, duration){
+  const el=document.getElementById('levelToast');
+  el.textContent=text; el.classList.add('show');
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.classList.remove('show'), duration||3200);
+}
+function showPowerBanner(text, duration){
+  const el=document.getElementById('powerBanner');
+  el.textContent=text; el.classList.add('show');
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.classList.remove('show'), duration||2200);
+}
+function openHelp(){
+  showHelpMenu();
+  document.getElementById('overlayHelp').classList.add('show');
+  updateBackButton();
+}
+function closeHelp(){ document.getElementById('overlayHelp').classList.remove('show'); updateBackButton(); }
+const helpSections={
+  controls:`
+    <div class="help-item">⬆️ <b>پرش:</b> با دکمه‌ی پرش (یا لمس صفحه، یا کلید Space) می‌پری. اگه هیچ‌کاری نکنی، شخصیت خودش رو زمین می‌دوه.</div>
+    <div class="help-item">🔢 <b>قانون اصلی:</b> اعداد <b>اول</b> رو با نپریدن «می‌خوری» (فقط بذار بهت بخوره). از اعداد <b>مرکب</b> باید با پرش رد بشی. اگه از اول بپری یا با مرکب برخورد کنی، اشتباهه!</div>
+    <div class="help-item">🪂 <b>اعداد بالای مسیر:</b> بعضی اعداد بالای سرت شناورن. اگه اول بود باید بپری و بگیریش؛ اگه مرکب بود، کاریش نداشته باش.</div>`,
+  levels:`
+    <div class="help-item">1️⃣ <b>مرحله ۱:</b> آسون‌ترین حالت. اعداد کوچیک (تا ۲۰)، بدون دشمن. اعداد بالای مسیر فقط جایزه‌ن — اگه از دستشون بدی چیزی از دست نمی‌دی.</div>
+    <div class="help-item">2️⃣ <b>مرحله ۲:</b> اعداد تا ۵۰. اعداد بالای مسیر از این به بعد جدی می‌شن؛ باید درست بگیریشون.</div>
+    <div class="help-item">3️⃣ <b>مرحله ۳:</b> 👾 دشمن‌ها وارد می‌شن! از همین‌جا ⚽ توپ و 🛡️ سپر باز می‌شن (جزئیاتش تو «قابلیت‌های ویژه»‌ست).</div>
+    <div class="help-item">4️⃣ <b>مرحله ۴:</b> اعداد تا ۱۵۰، سریع‌تر، دشمن بیشتر. اعداد بالای مسیر می‌تونن مرکب هم باشن، پس حواست باشه.</div>
+    <div class="help-item">5️⃣ <b>مرحله ۵ (چالش نهایی):</b> اعداد تا ۲۵۰، سریع‌ترین و پرتراکم‌ترین مرحله. اینجا 💥 موج انرژی و 🌟 عدد طلایی هم فعال می‌شن.</div>`,
+  powers:`
+    <div class="help-item">⚽ <b>توپ (از مرحله ۳):</b> هر ۳ جواب درست پشت‌سرهم = ۱ توپ. با دکمه‌ی ⚽ (که تعداد توپ‌هات روش نوشته شده) به دشمن‌ها شلیک کن.</div>
+    <div class="help-item">🛡️ <b>سپر (از مرحله ۳):</b> هر ۶ جواب درست پشت‌سرهم = ۱ سپر (حداکثر ۳ تا). با دکمه‌ی 🛡️ فعالش کن تا حدود ۲.۵ ثانیه در برابر هر اشتباهی در امان باشی. توپ و سپرهایی که جمع می‌کنی، وقتی مرحله رو رد کنی یا دوباره همون مرحله رو امتحان کنی، باهات می‌مونن.</div>
+    <div class="help-item">⚡ <b>آهسته‌سازی زمان:</b> جواب درست به هر عدد بالای ۱۰۰، ۳ ثانیه بازی رو آهسته‌تر می‌کنه — یه فرصت طلایی برای نفس تازه کردن. یه بنر بزرگ وسط صفحه بهت خبر می‌ده.</div>
+    <div class="help-item">💥 <b>موج انرژی شکارچی (فقط مرحله ۵):</b> هر ۱۰ جواب درست پشت‌سرهم، این قدرت رو فعال می‌کنه. با دکمه‌ی 💥 همه‌ی دشمن‌های روی صفحه رو یهو نابود کن و امتیاز کلی بگیر!</div>
+    <div class="help-item">🌟 <b>عدد طلایی (فقط مرحله ۵):</b> بعضی از اعداد، رنگ طلایی و برّاق دارن. جواب درست به اون‌ها، دو برابر امتیاز عادی بهت می‌ده!</div>`,
+  lives:`
+    <div class="help-item">❤️ با هر اشتباه یه جون از دست می‌دی.</div>
+    <div class="help-item">🔁 اگه جون‌هات تموم بشه، تا ۳ بار می‌تونی همون مرحله رو دوباره امتحان کنی (توپ و سپرهات هم باهات می‌مونن). بار چهارم، باید از مرحله ۱ شروع کنی.</div>
+    <div class="help-item">⭐ آخر هر مرحله، بر اساس جون باقی‌مونده بهت ۱ تا ۳ ستاره می‌ده.</div>`,
+  extra:`
+    <div class="help-item">🧠 وقتی هر ۵ مرحله رو رد کردی، «بازی تمرکزی» تو صفحه‌ی اصلی باز می‌شه — یه بازی برعکس و هیجان‌انگیز برای تقویت تمرکز!</div>
+    <div class="help-item">🎨 🔊 🎵 <b>تنظیمات:</b> از بالای صفحه می‌تونی رنگ پس‌زمینه، افکت‌های صوتی و آهنگ پس‌زمینه رو جدا از هم قطع/وصل کنی.</div>
+    <div class="help-item">🏠 هر جا خواستی می‌تونی با دکمه‌ی خونه برگردی به منوی اصلی.</div>`,
+};
+function showHelpSection(id){
+  document.getElementById('helpMenu').style.display='none';
+  const content=document.getElementById('helpContent');
+  content.style.display='block';
+  content.innerHTML=helpSections[id]||'';
+  content.scrollTop=0;
+  document.getElementById('helpBackBtn').style.display='block';
+}
+function showHelpMenu(){
+  document.getElementById('helpMenu').style.display='flex';
+  document.getElementById('helpContent').style.display='none';
+  document.getElementById('helpBackBtn').style.display='none';
+}
+function applyLevelUI(){
+  const cfg=levelConfigs[game.levelIdx];
+  document.getElementById('hudLevel').textContent=toFa(game.levelIdx+1);
+  document.getElementById('hudAmmoWrap').style.display = cfg.enemies? 'flex':'none';
+  document.getElementById('shootBtn').style.display = cfg.enemies? 'flex':'none';
+  document.getElementById('shieldBtn').style.display = game.levelIdx>=2 ? 'flex':'none';
+  document.getElementById('blastBtn').style.display = game.levelIdx===4 ? 'flex':'none';
+  updateHudShield(); updateHudBlast();
+  if(game.levelIdx===levelConfigs.length-1){
+    showToast('⚡ چالش نهایی! هر ۱۰ درست پشت‌هم یه موج انرژی 💥، و اعداد طلایی 🌟 دو برابر امتیاز می‌دن!', 4200);
+  } else if(cfg.enemies){
+    showToast('🎯 عدد اول بخور، توپ جمع کن! هر ۳ درست پشت‌هم = ۱ توپ، هر ۶ درست پشت‌هم = ۱ سپر 🛡️', 4200);
+  }
+}
+function hideOverlays(){
+  document.getElementById('overlayLevelComplete').classList.remove('show');
+  document.getElementById('overlayGameOver').classList.remove('show');
+  document.getElementById('overlayWin').classList.remove('show');
+}
+
+function pickNumber(lo,hi,wantPrime){
+  let n, tries=0;
+  do{ n=Math.floor(Math.random()*(hi-lo+1))+lo; tries++; } while(tries<20 && isPrime(n)!==wantPrime);
+  return n;
+}
+function spawnBlock(){
+  const cfg=levelConfigs[game.levelIdx];
+  const n=pickNumber(cfg.range[0],cfg.range[1], Math.random()<0.45);
+  const x=LOGICAL_W+20;
+  const golden = game.levelIdx===4 && Math.random()<0.22;
+  game.blocks.push({x, w:BLOCK_W, h:BLOCK_H, n, resolved:false, prevCenterX:x+BLOCK_W/2, golden});
+}
+function spawnElevBlock(){
+  const cfg=levelConfigs[game.levelIdx]; const ecfg=cfg.elevated;
+  const wantPrime = ecfg.forcePrime ? true : Math.random()<0.5;
+  const n=pickNumber(cfg.range[0],cfg.range[1], wantPrime);
+  const x=LOGICAL_W+20;
+  game.elevBlocks.push({x, w:ELEV_W, h:ELEV_H, n, resolved:false, punishing:ecfg.punishing, prevCenterX:x+ELEV_W/2});
+}
+function spawnEnemy(){
+  const x=LOGICAL_W+30;
+  game.enemies.push({x, w:ENEMY_W, h:ENEMY_H, resolved:false, prevCenterX:x+ENEMY_W/2});
+}
+function spawnHut(){
+  game.hut={x:game.player.x+300, w:92};
+}
+function spawnNext(){
+  const cfg=levelConfigs[game.levelIdx];
+  if(game.numbersSpawned>=TOTAL_NUMBERS_PER_LEVEL){
+    if(cfg.enemies) spawnEnemy();
+    return;
+  }
+  const w={ground:cfg.weights.ground, elevated:cfg.elevated.enabled?cfg.weights.elevated:0, enemy:cfg.enemies?cfg.weights.enemy:0};
+  const total=w.ground+w.elevated+w.enemy;
+  const r=Math.random()*total;
+  if(r<w.ground){ spawnBlock(); game.numbersSpawned++; }
+  else if(r<w.ground+w.elevated){ spawnElevBlock(); game.numbersSpawned++; }
+  else { spawnEnemy(); }
+}
+
+function jumpAction(){
+  if(!game||!game.running) return;
+  const p=game.player;
+  if(p.grounded){ p.vy=JUMP_VY0; p.grounded=false; p.squash=1.28; sndJump(); }
+}
+function shootAction(){
+  if(!game||!game.running) return;
+  if(!levelConfigs[game.levelIdx].enemies) return;
+  if(game.ammo<=0){ showToast('عدد اول بخور، توپ جمع کن! 🎯', 1600); return; }
+  game.ammo--; updateHudAmmo();
+  game.projectiles.push({x:game.player.x+38, y:game.player.y+16, w:12,h:12, vx:10, hit:false});
+  tone(700,0.08,'square',0.12);
+}
+function updateHudAmmo(){
+  document.getElementById('hudAmmo').textContent=toFa(game.ammo);
+  const badge=document.getElementById('shootBtnBadge');
+  if(badge) badge.textContent=toFa(game.ammo);
+}
+function updateHudScore(){ document.getElementById('hudScore').textContent=toFa(game.score); updateProgress(); }
+function updateHudLives(){ document.getElementById('hudLives').textContent=toFa(game.lives); }
+function addParticle(x,y,color,text){ game.particles.push({x,y,color,text,life:1}); }
+
+const SHIELD_CAP=3;
+function onCorrect(x,y,n,golden){
+  game.score+=10; game.combo++;
+  addParticle(x,y,'#2fae4a','+۱۰');
+  updateHudScore(); sndCoin(); updateComboUI();
+  if(golden){
+    game.score+=10; updateHudScore();
+    addParticle(x,y-36,'#FFD700','🌟 عدد طلایی! +۲۰');
+    game.flash={alpha:0.3,r:255,g:215,b:70};
+    sndLevelUp();
+  }
+  if(levelConfigs[game.levelIdx].enemies && game.combo%3===0 && game.ammo<5){
+    game.ammo++; updateHudAmmo();
+    addParticle(x,y-24,'#FFC93C','⚽ یه توپ گرفتی!');
+  }
+  if(game.combo>=2 && game.combo%5===0){
+    game.score+=15; updateHudScore();
+    addParticle(x,y-26,'#FFD700',`🔥 x${toFa(game.combo)} کومبو!`);
+    game.flash={alpha:0.28,r:255,g:215,b:70};
+    sndLevelUp();
+  }
+  if(game.levelIdx>=2 && game.combo>0 && game.combo%6===0 && game.shields<SHIELD_CAP){
+    game.shields++; updateHudShield();
+    addParticle(x,y-46,'#5FC4FF','🛡️ سپر گرفتی!');
+    sndLevelUp();
+  }
+  if(game.levelIdx===4 && game.combo>0 && game.combo%10===0 && game.blast<1){
+    game.blast=1; updateHudBlast();
+    addParticle(x,y-60,'#FF3D71','💥 موج انرژی آماده شد!');
+    showPowerBanner('💥 موج انرژی شکارچی آماده‌ست!\nدکمه‌ی 💥 رو بزن و همه‌ی دشمن‌ها رو نابود کن!', 2600);
+    sndFanfare();
+  }
+  if(n!==undefined && n>100){
+    triggerSlowMo();
+    addParticle(x,y-46,'#B388FF','⚡ آهسته‌سازی زمان!');
+  }
+}
+function triggerSlowMo(){
+  game.slowMoTimer=180;
+  sndSlowMo();
+  showPowerBanner('⚡ عدد بالای ۱۰۰ رو درست گفتی!\nبازی ۳ ثانیه آهسته‌تر شد', 2200);
+}
+function onWrong(x,y){
+  if(game.shieldWindow>0){
+    addParticle(x,y,'#5FC4FF','🛡️ محافظت شدی!');
+    sndPop();
+    return;
+  }
+  game.combo=0; game.lives--;
+  addParticle(x,y,'#e05d5d','اشتباه!');
+  updateHudLives(); sndWrong(); updateComboUI();
+  game.flash={alpha:0.32,r:255,g:70,b:70};
+  if(game.lives<=0) triggerGameOver();
+}
+function updateHudShield(){
+  const wrap=document.getElementById('hudShieldWrap');
+  document.getElementById('hudShield').textContent=toFa(game.shields);
+  wrap.style.display = game.shields>0 ? 'flex':'none';
+  const badge=document.getElementById('shieldBtnBadge');
+  const btn=document.getElementById('shieldBtn');
+  if(badge) badge.textContent=toFa(game.shields);
+  if(btn) btn.disabled = game.shields<=0;
+}
+function activateShield(){
+  if(!game||!game.running) return;
+  if(game.shields<=0) return;
+  game.shields--; updateHudShield();
+  game.shieldWindow=150;
+  addParticle(game.player.x+game.player.w/2, game.player.y-20, '#5FC4FF', '🛡️ سپر فعال شد!');
+  sndPop();
+}
+function updateHudBlast(){
+  const badge=document.getElementById('blastBtnBadge');
+  const btn=document.getElementById('blastBtn');
+  if(badge) badge.textContent=toFa(game.blast);
+  if(btn) btn.disabled = game.blast<=0;
+}
+function activateBlast(){
+  if(!game||!game.running) return;
+  if(game.blast<=0) return;
+  game.blast=0; updateHudBlast();
+  let bonus=50, cleared=0;
+  game.enemies.forEach(e=>{
+    if(!e.resolved){ e.resolved=true; cleared++; bonus+=20;
+      addParticle(e.x, GROUND_Y-e.h-6, '#FFC93C','+۲۰');
+    }
+  });
+  game.score+=bonus; updateHudScore();
+  game.blastRing={r:14, alpha:1};
+  addParticle(game.player.x+game.player.w/2, game.player.y-32, '#FF3D71', `💥 +${toFa(bonus)}`);
+  showPowerBanner(cleared>0 ? `💥 موج انرژی شکارچی!\n${toFa(cleared)} دشمن نابود شد` : '💥 موج انرژی شکارچی!', 2000);
+  sndFanfare();
+}
+function updateComboUI(){
+  const wrap=document.getElementById('comboWrap');
+  if(!wrap) return;
+  if(game.combo>=2){ wrap.style.display='flex'; document.getElementById('hudCombo').textContent=toFa(game.combo); }
+  else{ wrap.style.display='none'; }
+}
+function updateProgress(){
+  const bar=document.getElementById('progressBarFill');
+  if(bar) bar.style.width = Math.min(100, (game.numbersResolved/TOTAL_NUMBERS_PER_LEVEL)*100)+'%';
+}
+const MAX_LEVEL_RETRIES=3;
+let levelRetryCount=0;
+function triggerGameOver(){
+  game.running=false;
+  document.getElementById('gameOverText').textContent = `امتیاز نهایی: ${toFa(game.score)}`;
+  const btn=document.getElementById('retryBtn');
+  const title=document.getElementById('gameOverTitle');
+  if(levelRetryCount<MAX_LEVEL_RETRIES){
+    title.textContent='😅 این بار نشد!';
+    btn.textContent = `🔁 تلاش دوباره (${toFa(levelRetryCount+1)} از ${toFa(MAX_LEVEL_RETRIES)})`;
+  } else {
+    title.textContent='😵 مرحله رو نتونستی رد کنی';
+    btn.textContent = '🔁 شروع از مرحله ۱';
+  }
+  document.getElementById('overlayGameOver').classList.add('show');
+  sndGameOver();
+}
+function retryLevel(){
+  hideOverlays();
+  let targetLevel;
+  const sameLevelRetry = levelRetryCount<MAX_LEVEL_RETRIES;
+  if(sameLevelRetry){
+    levelRetryCount++;
+    targetLevel=game.levelIdx;
+  } else {
+    levelRetryCount=0;
+    targetLevel=0;
+  }
+  const carryAmmo=sameLevelRetry?game.ammo:0;
+  const carryShields=sameLevelRetry?game.shields:0;
+  game=freshGameState(targetLevel);
+  if(sameLevelRetry){
+    game.ammo=Math.max(carryAmmo, game.ammo);
+    game.shields=Math.min(SHIELD_CAP, carryShields);
+  }
+  applyLevelUI(); updateHudScore(); updateHudLives(); updateHudAmmo(); updateComboUI(); updateHudShield();
+  showScreen('screen-game');
+  requestAnimationFrame(loop);
+}
+function spawnConfetti(){
+  game.confetti=[];
+  const colors=['#FFC93C','#FF6B6B','#7C4DFF','#3fae55','#5FC4FF'];
+  const cx=game.player.x+game.player.w/2, cy=game.player.y;
+  for(let i=0;i<30;i++){
+    game.confetti.push({
+      x:cx, y:cy,
+      vx:(Math.random()-0.5)*9,
+      vy:-Math.random()*9-5,
+      rot:Math.random()*Math.PI*2,
+      vr:(Math.random()-0.5)*0.3,
+      color:colors[Math.floor(Math.random()*colors.length)],
+      w:6+Math.random()*5, h:9+Math.random()*5,
+    });
+  }
+}
+function triggerLevelComplete(){
+  game.finishing=false; game.hut=null;
+  spawnConfetti();
+  sndFanfare();
+  game.celebrating=75;
+}
+function showLevelCompleteOverlay(){
+  game.running=false;
+  const stars = game.lives>=4 ? 3 : (game.lives>=2 ? 2 : 1);
+  const starStr = '⭐'.repeat(stars) + '☆'.repeat(3-stars);
+  document.getElementById('levelCompleteText').textContent = `مرحله ${toFa(game.levelIdx+1)} با امتیاز ${toFa(game.score)} تموم شد!  ${starStr}`;
+  document.getElementById('overlayLevelComplete').classList.add('show');
+}
+function nextLevel(){
+  hideOverlays();
+  levelRetryCount=0;
+  if(game.levelIdx+1>=levelConfigs.length){
+    focusUnlocked=true; updateFocusButtonState();
+    document.getElementById('winText').textContent=`امتیاز نهایی: ${toFa(game.score)} 🏆`;
+    document.getElementById('overlayWin').classList.add('show');
+    return;
+  }
+  const carryScore=game.score, carryLives=Math.min(START_LIVES,game.lives+1);
+  const carryAmmo=game.ammo, carryShields=game.shields;
+  game=freshGameState(game.levelIdx+1);
+  game.score=carryScore; game.lives=carryLives;
+  game.ammo=Math.max(carryAmmo, game.ammo);
+  game.shields=Math.min(SHIELD_CAP, carryShields);
+  applyLevelUI(); updateHudScore(); updateHudLives(); updateHudAmmo(); updateComboUI(); updateHudShield();
+  game.running=true;
+  requestAnimationFrame(loop);
+}
+
+/* All ground-lane objects use a single-instant "crossing" check: we only care whether the
+   player is airborne or grounded at the exact moment the object's center passes the player's
+   fixed center-x. This is far more forgiving than requiring continuous non-overlap for the
+   whole pass, and -- combined with the unified spawn queue -- guarantees objects are always
+   resolved independently, one decision at a time. */
+function checkBlockCollisions(){
+  const p=game.player;
+  game.blocks.forEach(b=>{
+    if(b.resolved) return;
+    const newCenter=b.x+b.w/2;
+    if(b.prevCenterX>=PLAYER_CENTER_X && newCenter<PLAYER_CENTER_X){
+      b.resolved=true; game.numbersResolved++; updateProgress();
+      const bTop=GROUND_Y-b.h;
+      const jumped=!p.grounded;
+      const prime=isPrime(b.n);
+      if(prime===jumped) onWrong(b.x, bTop-6); else onCorrect(b.x, bTop-6, b.n, b.golden);
+    }
+    b.prevCenterX=newCenter;
+  });
+}
+function checkElevCollisions(){
+  const p=game.player;
+  game.elevBlocks.forEach(b=>{
+    if(b.resolved) return;
+    const bTop=ELEV_TOP, bBottom=ELEV_TOP+b.h;
+    const overlapX = p.x+p.w>b.x && p.x<b.x+b.w;
+    const overlapY = p.y+p.h>bTop && p.y<bBottom;
+    const prime=isPrime(b.n);
+    if(overlapX && overlapY){
+      b.resolved=true; game.numbersResolved++; updateProgress();
+      if(prime){ onCorrect(b.x, bTop-6, b.n); }
+      else if(b.punishing){ onWrong(b.x, bTop-6); }
+      else { addParticle(b.x, bTop-6, '#e0995d', 'نه اینو!'); sndPop(); }
+    } else if(b.x+b.w < p.x){
+      b.resolved=true; game.numbersResolved++; updateProgress();
+      if(prime){
+        if(b.punishing) onWrong(b.x, bTop-6);
+        else addParticle(b.x, bTop-6, '#999', 'از دست رفت');
+      } else if(b.punishing){ onCorrect(b.x, bTop-6, b.n); }
+    }
+  });
+}
+function checkProjectileVsEnemy(){
+  game.projectiles.forEach(pr=>{
+    if(pr.hit) return;
+    game.enemies.forEach(e=>{
+      if(e.resolved) return;
+      const eTop=GROUND_Y-e.h;
+      if(pr.x<e.x+e.w && pr.x+pr.w>e.x && pr.y<GROUND_Y && pr.y+pr.h>eTop){
+        e.resolved=true; pr.hit=true;
+        game.score+=20; updateHudScore();
+        addParticle(e.x,eTop-6,'#FFC93C','+۲۰'); sndPop();
+      }
+    });
+  });
+}
+function checkEnemyCollisions(){
+  const p=game.player;
+  game.enemies.forEach(e=>{
+    if(e.resolved) return;
+    const newCenter=e.x+e.w/2;
+    if(e.prevCenterX>=PLAYER_CENTER_X && newCenter<PLAYER_CENTER_X){
+      e.resolved=true;
+      const eTop=GROUND_Y-e.h;
+      if(p.grounded){
+        if(game.shieldWindow>0){
+          addParticle(e.x,eTop-6,'#5FC4FF','🛡️ محافظت شدی!'); sndPop();
+        } else {
+          game.combo=0; game.lives--; updateHudLives(); updateComboUI();
+          addParticle(e.x,eTop-6,'#e05d5d','آخ!'); sndWrong();
+          game.flash={alpha:0.32,r:255,g:70,b:70};
+          if(game.lives<=0) triggerGameOver();
+        }
+      } else {
+        game.score+=5; updateHudScore();
+        addParticle(e.x,eTop-6,'#2fae4a','+۵'); sndCoin();
+      }
+    }
+    e.prevCenterX=newCenter;
+  });
+}
+
+function update(){
+  const cfg=levelConfigs[game.levelIdx];
+  const p=game.player;
+
+  if(game.celebrating>0){
+    game.celebrating--;
+    game.confetti.forEach(c=>{ c.vy+=0.3; c.x+=c.vx; c.y+=c.vy; c.rot+=c.vr; });
+    game.confetti=game.confetti.filter(c=>c.y<LOGICAL_H+30);
+    game.particles.forEach(pt=>{ pt.y-=1.1; pt.life-=0.018; });
+    game.particles=game.particles.filter(pt=>pt.life>0);
+    if(game.celebrating<=0){ showLevelCompleteOverlay(); }
+    return;
+  }
+
+  const prevGrounded=p.grounded;
+  p.vy+=GRAVITY; p.y+=p.vy;
+  if(p.y>=GROUND_Y-p.h){
+    p.y=GROUND_Y-p.h; p.vy=0; p.grounded=true;
+    if(!prevGrounded) p.squash=0.72;
+  }
+  p.squash += (1-p.squash)*0.22;
+
+  if(game.shieldWindow>0) game.shieldWindow--;
+  if(game.slowMoTimer>0) game.slowMoTimer--;
+  const speed = game.slowMoTimer>0 ? cfg.speed*0.5 : cfg.speed;
+
+  game.distance+=speed;
+
+  if(!game.finishing){
+    game.spawnTimer-=speed;
+    if(game.spawnTimer<=0){ spawnNext(); game.spawnTimer=cfg.gap+Math.random()*45; }
+    if(game.numbersResolved>=TOTAL_NUMBERS_PER_LEVEL){ game.finishing=true; spawnHut(); }
+  } else if(game.hut){
+    game.hut.x-=speed;
+    if(game.hut.x<=p.x+p.w){ triggerLevelComplete(); }
+  }
+
+  game.blocks.forEach(b=>b.x-=speed);
+  game.elevBlocks.forEach(b=>b.x-=speed);
+  game.enemies.forEach(e=>e.x-=speed);
+  game.projectiles.forEach(pr=>pr.x+=pr.vx);
+  game.particles.forEach(pt=>{ pt.y-=1.1; pt.life-=0.018; });
+  if(game.flash.alpha>0) game.flash.alpha=Math.max(0, game.flash.alpha-0.035);
+  if(game.blastRing){ game.blastRing.r+=16; game.blastRing.alpha-=0.045; if(game.blastRing.alpha<=0) game.blastRing=null; }
+
+  checkProjectileVsEnemy();
+  checkBlockCollisions();
+  checkElevCollisions();
+  if(cfg.enemies) checkEnemyCollisions();
+
+  game.blocks=game.blocks.filter(b=>!b.resolved && b.x>-80);
+  game.elevBlocks=game.elevBlocks.filter(b=>!b.resolved && b.x>-80);
+  game.enemies=game.enemies.filter(e=>!e.resolved && e.x>-70);
+  game.projectiles=game.projectiles.filter(pr=>pr.x<LOGICAL_W+20 && !pr.hit);
+  game.particles=game.particles.filter(pt=>pt.life>0);
+}
+
+/* ---------- drawing ---------- */
+function roundRect(x,y,w,h,r){
+  ctx.beginPath(); ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+function drawSun(){
+  ctx.save(); ctx.globalAlpha=0.85;
+  ctx.fillStyle='rgba(255,255,255,.55)';
+  ctx.beginPath(); ctx.arc(370,90,42,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.35)'; ctx.lineWidth=5;
+  for(let i=0;i<8;i++){
+    const ang=i*Math.PI/4;
+    ctx.beginPath();
+    ctx.moveTo(370+Math.cos(ang)*54, 90+Math.sin(ang)*54);
+    ctx.lineTo(370+Math.cos(ang)*68, 90+Math.sin(ang)*68);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawClouds(){
+  ctx.fillStyle='rgba(255,255,255,.85)';
+  ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.lineWidth=1.5;
+  const off=(game.distance*0.15)%400;
+  for(let i=0;i<5;i++){
+    let cx = i*160 - off;
+    cx = ((cx % (LOGICAL_W+400)) + (LOGICAL_W+400)) % (LOGICAL_W+400) - 200;
+    const cy = 90 + (i%3)*95;
+    ctx.beginPath();
+    ctx.ellipse(cx,cy,28,14,0,0,Math.PI*2);
+    ctx.ellipse(cx+22,cy-5,19,11,0,0,Math.PI*2);
+    ctx.ellipse(cx-20,cy-3,17,10,0,0,Math.PI*2);
+    ctx.fill(); ctx.stroke();
+  }
+}
+function drawPipes(){
+  const off=(game.distance)%320;
+  ctx.strokeStyle='#1b6b2e'; ctx.lineWidth=2.5;
+  for(let x=-320;x<LOGICAL_W+320;x+=320){
+    const px=x-off+160;
+    const pw=44, ph=54+((Math.floor((x+off)/320))%2)*20;
+    const top=GROUND_Y-ph;
+    ctx.fillStyle='#3FAE55';
+    roundRect(px-pw/2, top+12, pw, ph-12, 3); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#4CC766';
+    roundRect(px-pw/2-4, top, pw+8, 16, 4); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.25)';
+    ctx.fillRect(px-pw/2+5, top+16, 6, ph-18);
+  }
+}
+function drawMountainLayer(baseY,spacing,height,color,parallax){
+  const off=(game.distance*parallax)%spacing;
+  ctx.fillStyle=color;
+  ctx.beginPath();
+  ctx.moveTo(-spacing*2, GROUND_Y+5);
+  for(let x=-spacing*2;x<=LOGICAL_W+spacing*2;x+=spacing){
+    const cx=x-off;
+    ctx.lineTo(cx+spacing/2, baseY-height);
+    ctx.lineTo(cx+spacing, baseY);
+  }
+  ctx.lineTo(LOGICAL_W+spacing*2, GROUND_Y+5);
+  ctx.closePath(); ctx.fill();
+}
+function drawHillLayer(baseY,radius,color,parallax,phase){
+  const off=(game.distance*parallax)%(radius*1.6);
+  ctx.fillStyle=color;
+  for(let x=-radius*2;x<LOGICAL_W+radius*2;x+=radius*1.6){
+    const cx=x-off+phase;
+    ctx.beginPath(); ctx.arc(cx,baseY,radius,Math.PI,0); ctx.fill();
+  }
+  ctx.fillRect(0,baseY,LOGICAL_W,GROUND_Y-baseY+2);
+}
+function drawMarioHills(baseY,radius,color,highlight,parallax,phase){
+  const off=(game.distance*parallax)%(radius*1.6);
+  for(let x=-radius*2;x<LOGICAL_W+radius*2;x+=radius*1.6){
+    const cx=x-off+phase;
+    ctx.fillStyle=color;
+    ctx.beginPath(); ctx.arc(cx,baseY,radius,Math.PI,0); ctx.fill();
+    ctx.fillStyle=highlight;
+    ctx.beginPath(); ctx.arc(cx-radius*0.28,baseY-radius*0.18,radius*0.42,Math.PI*1.15,Math.PI*1.85); ctx.fill();
+  }
+}
+function drawBackground(){
+  const grad=ctx.createLinearGradient(0,0,0,GROUND_Y);
+  grad.addColorStop(0,skyColors[0]); grad.addColorStop(1,skyColors[1]);
+  ctx.fillStyle=grad; ctx.fillRect(0,0,LOGICAL_W,GROUND_Y);
+  drawSun();
+  drawClouds();
+  drawMountainLayer(560,240,85,'rgba(255,255,255,.22)',0.10);
+  drawHillLayer(615,120,'rgba(255,255,255,.28)',0.20,0);
+  drawMarioHills(GROUND_Y+2,95,'#4CAF50','#63C775',0.26,40);
+}
+function drawGround(){
+  ctx.fillStyle='#4CAF50'; ctx.fillRect(0,GROUND_Y,LOGICAL_W,14);
+  ctx.fillStyle='#3d8b40';
+  const goff=(game.distance)%20;
+  for(let x=-20;x<LOGICAL_W+20;x+=20){ ctx.fillRect(x-goff, GROUND_Y, 10, 14); }
+  const bodyTop=GROUND_Y+14;
+  ctx.fillStyle='#c97b3d'; ctx.fillRect(0,bodyTop,LOGICAL_W,LOGICAL_H-bodyTop);
+  const brickW=38, brickH=20;
+  ctx.strokeStyle='rgba(90,50,20,.5)'; ctx.lineWidth=2;
+  const boff=(game.distance)%brickW;
+  let row=0;
+  for(let y=bodyTop;y<LOGICAL_H;y+=brickH){
+    const rowOffset=(row%2===0)?0:brickW/2;
+    for(let x=-brickW;x<LOGICAL_W+brickW;x+=brickW){
+      ctx.strokeRect(x-boff+rowOffset,y,brickW,brickH);
+    }
+    row++;
+  }
+  ctx.fillStyle='#3a9e46';
+  const bushOff=(game.distance)%240;
+  for(let x=-240;x<LOGICAL_W+240;x+=240){
+    const bx=x-bushOff;
+    ctx.beginPath();
+    ctx.ellipse(bx,GROUND_Y+2,22,12,0,0,Math.PI*2);
+    ctx.ellipse(bx+18,GROUND_Y+4,15,9,0,0,Math.PI*2);
+    ctx.ellipse(bx-16,GROUND_Y+4,15,9,0,0,Math.PI*2);
+    ctx.fill();
+  }
+}
+function drawRivets(x,y,w,h,color){
+  ctx.fillStyle=color||'rgba(90,61,0,.55)';
+  const r=1.6, pad=5;
+  [[x+pad,y+pad],[x+w-pad,y+pad],[x+pad,y+h-pad],[x+w-pad,y+h-pad]].forEach(pt=>{
+    ctx.beginPath(); ctx.arc(pt[0],pt[1],r,0,Math.PI*2); ctx.fill();
+  });
+}
+function drawBlocks(){
+  game.blocks.forEach(b=>{
+    const top=GROUND_Y-b.h;
+    if(b.golden){
+      const pulse=1+Math.sin(game.distance*0.15+b.x*0.05)*0.08;
+      ctx.save();
+      ctx.shadowColor='#FFD700'; ctx.shadowBlur=14*pulse;
+      ctx.fillStyle='#FFE066'; ctx.strokeStyle='#B8860B'; ctx.lineWidth=2.5;
+      roundRect(b.x,top,b.w,b.h,5); ctx.fill(); ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle='rgba(255,255,255,.55)'; ctx.fillRect(b.x+3,top+2.5,b.w-6,2.5);
+      drawRivets(b.x,top,b.w,b.h,'rgba(120,80,0,.6)');
+      ctx.fillStyle='#7a5200'; ctx.font='bold 13px Shabnam, Tahoma, sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(toFa(b.n), b.x+b.w/2, top+b.h/2+1);
+      ctx.font='11px sans-serif';
+      ctx.fillText('🌟', b.x+b.w/2, top-8);
+    } else {
+      /* classic "?" mystery block styling */
+      ctx.fillStyle='#FDC332'; ctx.strokeStyle='#7a4f00'; ctx.lineWidth=2.5;
+      roundRect(b.x,top,b.w,b.h,5); ctx.fill(); ctx.stroke();
+      ctx.fillStyle='rgba(255,255,255,.4)'; ctx.fillRect(b.x+3,top+2.5,b.w-6,2.5);
+      drawRivets(b.x,top,b.w,b.h);
+      ctx.fillStyle='rgba(122,79,0,.28)'; ctx.font='bold 15px Tahoma, sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('؟', b.x+b.w/2, top+b.h/2-7);
+      ctx.fillStyle='#5a3d00'; ctx.font='bold 13px Shabnam, Tahoma, sans-serif';
+      ctx.fillText(toFa(b.n), b.x+b.w/2, top+b.h/2+3);
+    }
+  });
+}
+function drawElevBlocks(){
+  game.elevBlocks.forEach(b=>{
+    const bob=Math.sin((game.distance*0.05)+b.x*0.05)*3;
+    const top=ELEV_TOP+bob;
+    if(b.punishing){
+      /* classic brick block */
+      ctx.fillStyle='#C97B3D'; ctx.strokeStyle='#7a4518'; ctx.lineWidth=2.5;
+      roundRect(b.x,top,b.w,b.h,4); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle='rgba(90,50,20,.6)'; ctx.lineWidth=1.3;
+      ctx.beginPath();
+      ctx.moveTo(b.x,top+b.h/2); ctx.lineTo(b.x+b.w,top+b.h/2);
+      ctx.moveTo(b.x+b.w/2,top); ctx.lineTo(b.x+b.w/2,top+b.h/2);
+      ctx.moveTo(b.x+b.w/4,top+b.h/2); ctx.lineTo(b.x+b.w/4,top+b.h);
+      ctx.moveTo(b.x+b.w*0.75,top+b.h/2); ctx.lineTo(b.x+b.w*0.75,top+b.h);
+      ctx.stroke();
+      ctx.fillStyle='#fff'; ctx.font='bold 13px Shabnam, Tahoma, sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(toFa(b.n), b.x+b.w/2, top+b.h/2+1);
+    } else {
+      /* classic "?" mystery block */
+      ctx.fillStyle='#FDC332'; ctx.strokeStyle='#7a4f00'; ctx.lineWidth=2.5;
+      roundRect(b.x,top,b.w,b.h,4); ctx.fill(); ctx.stroke();
+      ctx.fillStyle='rgba(255,255,255,.4)'; ctx.fillRect(b.x+3,top+2.5,b.w-6,2);
+      drawRivets(b.x,top,b.w,b.h);
+      ctx.fillStyle='rgba(122,79,0,.3)'; ctx.font='bold 15px Tahoma, sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('؟', b.x+b.w/2, top+b.h/2-8);
+      ctx.fillStyle='#5a3d00'; ctx.font='bold 13px Shabnam, Tahoma, sans-serif';
+      ctx.fillText(toFa(b.n), b.x+b.w/2, top+b.h/2+4);
+    }
+    ctx.strokeStyle='rgba(255,255,255,.35)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(b.x+b.w/2,top+b.h); ctx.lineTo(b.x+b.w/2,GROUND_Y+2); ctx.stroke();
+  });
+}
+function drawEnemies(){
+  game.enemies.forEach(e=>{
+    const top=GROUND_Y-e.h;
+    const cx=e.x+e.w/2, wob=Math.sin(game.distance*0.25+e.x*0.1)*1.4;
+    /* stubby feet */
+    ctx.fillStyle='#3d2210';
+    ctx.beginPath(); ctx.ellipse(e.x+8,GROUND_Y-3,7,5,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(e.x+e.w-8,GROUND_Y-3,7,5,0,0,Math.PI*2); ctx.fill();
+    /* mushroom-dome body */
+    ctx.fillStyle='#8B5A2B'; ctx.strokeStyle='#5a3717'; ctx.lineWidth=2.2;
+    ctx.beginPath();
+    ctx.arc(cx, top+e.h*0.42+wob, e.w/2, Math.PI, 0);
+    ctx.lineTo(e.x+e.w, top+e.h-3+wob);
+    ctx.quadraticCurveTo(cx, top+e.h+5+wob, e.x, top+e.h-3+wob);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    /* lighter belly */
+    ctx.fillStyle='#C89A6A';
+    ctx.beginPath(); ctx.ellipse(cx, top+e.h*0.62+wob, e.w*0.34, e.h*0.2, 0,0,Math.PI*2); ctx.fill();
+    /* angry eyebrows */
+    ctx.strokeStyle='#3d2210'; ctx.lineWidth=2.6; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(cx-13,top+e.h*0.3+wob); ctx.lineTo(cx-4,top+e.h*0.38+wob); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx+13,top+e.h*0.3+wob); ctx.lineTo(cx+4,top+e.h*0.38+wob); ctx.stroke();
+    /* eyes */
+    ctx.fillStyle='#fff';
+    ctx.beginPath(); ctx.ellipse(cx-8,top+e.h*0.46+wob,4,4.6,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx+8,top+e.h*0.46+wob,4,4.6,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#1B1B2F';
+    ctx.beginPath(); ctx.arc(cx-7,top+e.h*0.49+wob,2,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx+9,top+e.h*0.49+wob,2,0,Math.PI*2); ctx.fill();
+    /* little fangs */
+    ctx.fillStyle='#fff';
+    ctx.beginPath(); ctx.moveTo(cx-4,top+e.h*0.66+wob); ctx.lineTo(cx-1.5,top+e.h*0.66+wob); ctx.lineTo(cx-2.7,top+e.h*0.74+wob); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx+4,top+e.h*0.66+wob); ctx.lineTo(cx+1.5,top+e.h*0.66+wob); ctx.lineTo(cx+2.7,top+e.h*0.74+wob); ctx.closePath(); ctx.fill();
+  });
+}
+function drawProjectiles(){
+  ctx.fillStyle='#fff';
+  game.projectiles.forEach(pr=>{ ctx.beginPath(); ctx.arc(pr.x+pr.w/2,pr.y+pr.h/2,pr.w/2,0,Math.PI*2); ctx.fill(); });
+}
+function drawParticles(){
+  game.particles.forEach(pt=>{
+    ctx.globalAlpha=Math.max(pt.life,0);
+    ctx.font='bold 17px Shabnam, Tahoma, sans-serif'; ctx.textAlign='center';
+    ctx.lineWidth=3.5; ctx.strokeStyle='rgba(0,0,0,.55)'; ctx.lineJoin='round';
+    ctx.strokeText(pt.text, pt.x, pt.y);
+    ctx.fillStyle=pt.color;
+    ctx.fillText(pt.text, pt.x, pt.y); ctx.globalAlpha=1;
+  });
+}
+function drawHut(){
+  const h=game.hut; if(!h) return;
+  const baseY=GROUND_Y, poleX=h.x+h.w/2, poleTop=baseY-190;
+  /* small stone base */
+  ctx.fillStyle='#D9D0B8'; ctx.strokeStyle='#8a7f5f'; ctx.lineWidth=2.5;
+  roundRect(poleX-16, baseY-14, 32, 14, 3); ctx.fill(); ctx.stroke();
+  /* pole */
+  ctx.strokeStyle='#C9C9C9'; ctx.lineWidth=5; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(poleX, baseY-12); ctx.lineTo(poleX, poleTop); ctx.stroke();
+  ctx.strokeStyle='#8a8a8a'; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(poleX-1.5, baseY-12); ctx.lineTo(poleX-1.5, poleTop); ctx.stroke();
+  /* gold ball on top */
+  ctx.fillStyle='#FFC93C'; ctx.strokeStyle='#B8860B'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.arc(poleX, poleTop-8, 7, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  /* waving flag */
+  const t=game.distance*0.12;
+  const flagW=40, flagH=28, flagY=poleTop+8;
+  ctx.fillStyle='#E63946'; ctx.strokeStyle='#8f1f29'; ctx.lineWidth=1.5;
+  ctx.beginPath();
+  ctx.moveTo(poleX, flagY);
+  ctx.quadraticCurveTo(poleX+flagW*0.55+Math.sin(t)*4, flagY+flagH*0.18, poleX+flagW, flagY+2+Math.sin(t+1)*3);
+  ctx.quadraticCurveTo(poleX+flagW*0.6, flagY+flagH*0.55, poleX+flagW-4+Math.sin(t+0.5)*4, flagY+flagH);
+  ctx.quadraticCurveTo(poleX+flagW*0.4, flagY+flagH*0.8, poleX, flagY+flagH-4);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.85)'; ctx.font='bold 12px Shabnam, Tahoma, sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('🏁', poleX+flagW*0.42, flagY+flagH*0.5);
+  /* decorative little green pipe + bush beside the pole */
+  ctx.fillStyle='#3FAE55'; ctx.strokeStyle='#1b6b2e'; ctx.lineWidth=2;
+  roundRect(poleX-46, baseY-30, 24, 30, 3); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='#4CC766';
+  roundRect(poleX-50, baseY-38, 32, 12, 3); ctx.fill(); ctx.stroke();
+}
+function drawConfetti(){
+  game.confetti.forEach(c=>{
+    ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.rot);
+    ctx.fillStyle=c.color; ctx.fillRect(-c.w/2,-c.h/2,c.w,c.h);
+    ctx.restore();
+  });
+}
+function render(){
+  ctx.clearRect(0,0,LOGICAL_W,LOGICAL_H);
+  drawBackground(); drawPipes(); drawGround(); drawHut(); drawElevBlocks(); drawBlocks(); drawEnemies(); drawProjectiles();
+  const p=game.player;
+  drawHunterSide(ctx, p.x+p.w/2, p.y+p.h/2, 0.95, p.squash, game.distance*0.25, p.grounded);
+  drawParticles();
+  drawConfetti();
+  if(game.slowMoTimer>0){
+    ctx.fillStyle='rgba(120,80,255,0.10)';
+    ctx.fillRect(0,0,LOGICAL_W,LOGICAL_H);
+  }
+  if(game.shieldWindow>0){
+    ctx.save();
+    ctx.strokeStyle='rgba(95,196,255,.8)'; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.arc(p.x+p.w/2,p.y+p.h/2,p.w/2+8+Math.sin(game.distance*0.2)*2,0,Math.PI*2); ctx.stroke();
+    ctx.restore();
+  }
+  if(game.blastRing){
+    ctx.save();
+    ctx.globalAlpha=Math.max(0,game.blastRing.alpha);
+    ctx.strokeStyle='#FF3D71'; ctx.lineWidth=7;
+    ctx.beginPath(); ctx.arc(p.x+p.w/2,p.y+p.h/2,game.blastRing.r,0,Math.PI*2); ctx.stroke();
+    ctx.restore();
+  }
+  if(game.flash.alpha>0){
+    ctx.fillStyle=`rgba(${game.flash.r},${game.flash.g},${game.flash.b},${game.flash.alpha})`;
+    ctx.fillRect(0,0,LOGICAL_W,LOGICAL_H);
+  }
+}
+function loop(){
+  if(!game||!game.running) return;
+  update(); render();
+  requestAnimationFrame(loop);
+}
+
+/* ---------- input ---------- */
+document.getElementById('jumpBtn').addEventListener('touchstart',e=>{e.preventDefault();jumpAction();});
+document.getElementById('jumpBtn').addEventListener('mousedown',jumpAction);
+document.getElementById('shootBtn').addEventListener('touchstart',e=>{e.preventDefault();shootAction();});
+document.getElementById('shootBtn').addEventListener('mousedown',shootAction);
+document.getElementById('shieldBtn').addEventListener('touchstart',e=>{e.preventDefault();activateShield();});
+document.getElementById('blastBtn').addEventListener('touchstart',e=>{e.preventDefault();activateBlast();});
+canvas.addEventListener('mousedown',jumpAction);
+canvas.addEventListener('touchstart',e=>{e.preventDefault();jumpAction();});
+window.addEventListener('keydown',e=>{
+  if(e.code==='Space'||e.code==='ArrowUp'){ e.preventDefault(); jumpAction(); }
+  if(e.code==='KeyS'){ shootAction(); }
+});
+showScreen('screen-start');
+updateFocusButtonState();
+</script>
+</body>
+</html>
